@@ -1,0 +1,41 @@
+{
+  "name": "mshule/laravel-pipes",
+  "description": "A description for laravel-pipes.",
+  "type": "package",
+  "license": "MIT",
+  "keywords": [
+    "laravel"
+  ],
+  "authors": [
+    {
+      "name": "Krishan Koenig, Otieno Julie",
+      "email": "krishan.koenig@googlemail.com"
+    }
+  ],
+  "require": {
+    "illuminate/support": "~5.7.0|~5.8.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Mshule\\LaravelPipes\\": "./src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Mshule\\LaravelPipes\\Tests\\": "tests"
+    }
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Mshule\\LaravelPipes\\LaravelPipesServiceProvider"
+      ]
+    }
+  },
+  "require-dev": {
+    "orchestra/testbench": "^3.8"
+  }
+}
