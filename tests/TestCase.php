@@ -9,23 +9,21 @@ class TestCase extends Orchestra
     /**
      * Get package providers.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param \Illuminate\Foundation\Application $app
      *
      * @return array
      */
     protected function getPackageProviders($app)
     {
         return [
-            \Mshule\LaravelPipes\\LaravelPipesServiceProvider::class,
+            \Mshule\LaravelPipes\LaravelPipesServiceProvider::class,
         ];
     }
 
     /**
      * Define environment setup.
      *
-     * @param  \Illuminate\Foundation\Application   $app
-     *
-     * @return void
+     * @param \Illuminate\Foundation\Application $app
      */
     protected function getEnvironmentSetUp($app)
     {
