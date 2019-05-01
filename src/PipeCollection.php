@@ -47,7 +47,7 @@ class PipeCollection implements Countable, IteratorAggregate
     {
         $cue = $pipe->cue();
 
-        foreach ($pipe->attributes() as $attribute) {
+        foreach ($pipe->inputs() as $attribute) {
             $this->pipes[$attribute][$cue] = $pipe;
         }
 
@@ -66,7 +66,7 @@ class PipeCollection implements Countable, IteratorAggregate
     {
         $attributeKeys = array_keys($request->all());
 
-        if (is_null($attributeKeys)) {
+        if (count($attributeKeys) === 0) {
             throw new NotFoundPipeException(request());
         }
 
@@ -78,7 +78,7 @@ class PipeCollection implements Countable, IteratorAggregate
         $pipe = $this->matchAgainstPipes($pipes, $request);
 
         if (! is_null($pipe)) {
-            return $pipe;
+            return $pipe->bind($request);
         }
 
         throw new NotFoundPipeException($request);
@@ -87,18 +87,18 @@ class PipeCollection implements Countable, IteratorAggregate
     /**
      * Determine if a pipe in the array matches the request.
      *
-     * @param array                    $routes
+     * @param array                    $pipes
      * @param \Illuminate\Http\Request $request
      *
      * @return \Mshule\LaravelPipes\Pipe $pipe|null
      */
     protected function matchAgainstPipes(array $pipes, $request)
     {
-        // [$fallbacks, $pipes] = collect($pipes)->partition(function ($route) {
-        //     return $route->isFallback;
-        // });
+        [$fallbacks, $pipes] = collect($pipes)->partition(function ($route) {
+            return $route->isFallback;
+        });
 
-        return collect($pipes)->first(function ($value) use ($request) {
+        return $pipes->merge($fallbacks)->first(function ($value) use ($request) {
             return $value->matches($request);
         });
     }
@@ -114,7 +114,7 @@ class PipeCollection implements Countable, IteratorAggregate
     {
         return collect($this->pipes)
             ->filter(function ($value, $key) use ($keys) {
-                return in_array($key, $keys);
+                return '*' === $key || in_array($key, $keys);
             })
             ->flatten()
             ->toArray();

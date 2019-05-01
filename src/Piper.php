@@ -3,10 +3,9 @@
 namespace Mshule\LaravelPipes;
 
 use Closure;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Routing\Pipeline;
-use Illuminate\Support\Collection;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Routing\MiddlewareNameResolver;
@@ -68,15 +67,48 @@ class Piper implements RegistrarContract
     /**
      * Register a new pipe with the given verbs.
      *
-     * @param string                         $attributes
+     * @param string                         $inputs
+     * @param string                         $cue
+     * @param \Closure|array|string|callable $action
+     * @return \Mshule\LaravelPipes\Pipe
+     */
+    public function any($cue, $action = [])
+    {
+        return $this->addPipe('*', $cue, $action);
+    }
+
+    /**
+     * Register a new Fallback pipe with the piper.
+     *
+     * @param \Closure|array|string|callable|null $action
+     * @return \Mshule\LaravelPipes\Pipe
+     */
+    public function fallback($action)
+    {
+        return $this->addPipe('*:*', $action)
+            ->fallback();
+    }
+
+    /**
+     * Register a new pipe with the given verbs.
+     *
+     * @param string                         $inputs
      * @param string                         $cue
      * @param \Closure|array|string|callable $action
      *
      * @return \Mshule\LaravelPipes\Pipe
      */
-    public function match($attributes, $cue, $action)
+    public function match($inputs, $cue, $action = [])
     {
-        return $this->addPipe($attributes, $cue, $action);
+        // If only two arguments were entered and the first
+        // does not contain a colon (:), we assume the
+        // user either wants to allow any input or
+        // will specify a specific input later on
+        if (2 === count(func_get_args()) && (is_string($inputs) && ! Str::contains($inputs, ':'))) {
+            return $this->any($inputs, $cue);
+        }
+
+        return $this->addPipe($inputs, $cue, $action);
     }
 
     /**
@@ -124,30 +156,61 @@ class Piper implements RegistrarContract
     }
 
     /**
+     * Load the provided pipes.
+     *
+     * @param \Closure|string $pipes
+     */
+    protected function loadPipes($pipes)
+    {
+        if ($pipes instanceof Closure) {
+            $pipes($this);
+        } else {
+            throw new \Exception('Loading through files was not implemented yet');
+            // (new RouteFileRegistrar($this))->register($pipes);
+        }
+    }
+
+    /**
      * Add a pipe to the underlying pipe collection.
      *
-     * @param string                              $attributes
-     * @param string                              $cue
-     * @param \Closure|array|string|callable|null $action
+     * @param string                         $inputs
+     * @param string                         $cue
+     * @param \Closure|array|string|callable $action
      *
      * @return \Mshule\LaravelPipes\Pipe
      */
-    public function addPipe($attributes, $cue, $action)
+    public function addPipe($inputs, $cue, $action = [])
     {
-        return $this->pipes->add($this->createPipe($attributes, $cue, $action));
+        return $this->pipes->add($this->createPipe($inputs, $cue, $action));
     }
 
     /**
      * Create a new pipe instance.
      *
-     * @param string $attributes
+     * @param string $inputs
      * @param string $cue
      * @param mixed  $action
      *
      * @return \Mshule\LaravelPipes\Pipe
      */
-    protected function createPipe($attributes, $cue, $action)
+    protected function createPipe($inputs, $cue, $action = [])
     {
+        // if the input was passed in combination with the cue
+        // seperated by a colon (:), the values need to
+        // be reassigned to the right variable.
+        if (is_string($inputs) && Str::contains($inputs, ':')) {
+            list($inputs, $cue, $action) = array_merge(
+                explode(':', $inputs),
+                [array_merge(['uses' => $cue], $action)]
+            );
+        }
+
+        // if the input was passed through the fluent api the
+        // order of the func argument have to be rearranged.
+        if (is_callable($cue) || Str::contains($cue, '@')) {
+            list($inputs, $cue, $action) = [$action, $inputs, $cue];
+        }
+
         // If the pipe is pointing to a controller we will parse the pipe action into
         // an acceptable array format before registering it and creating this pipe
         // instance itself. We need to build the Closure that will call this out.
@@ -156,9 +219,9 @@ class Piper implements RegistrarContract
         }
 
         $pipe = $this->newPipe(
-            $attributes,
             $cue,
-            $action
+            $action,
+            $inputs
         );
 
         // If we have groups that need to be merged, we will merge them now after this
@@ -216,17 +279,32 @@ class Piper implements RegistrarContract
     }
 
     /**
+     * Prepend the last group namespace onto the use clause.
+     *
+     * @param string $class
+     *
+     * @return string
+     */
+    protected function prependGroupNamespace($class)
+    {
+        $group = end($this->groupStack);
+
+        return isset($group['namespace']) && 0 !== strpos($class, '\\')
+                ? $group['namespace'] . '\\' . $class : $class;
+    }
+
+    /**
      * Create a new Pipe object.
      *
-     * @param array|string $attributes
-     * @param string       $uri
+     * @param string       $cue
      * @param mixed        $action
+     * @param array|string $inputs
      *
      * @return \Mshule\LaravelPipes\Pipe
      */
-    protected function newPipe($attributes, $cue, $action)
+    protected function newPipe($cue, $action, $inputs = [])
     {
-        return (new Pipe($attributes, $cue, $action))
+        return (new Pipe($cue, $action, $inputs))
                     ->setPiper($this)
                     ->setContainer($this->container);
     }
@@ -310,15 +388,10 @@ class Piper implements RegistrarContract
      */
     protected function runPipeWithinStack(Pipe $pipe, Request $request)
     {
-        return $this->prepareResponse(
-            $request,
-            $pipe->run()
-        );
-
         $shouldSkipMiddleware = $this->container->bound('middleware.disable') &&
                                 true === $this->container->make('middleware.disable');
 
-        $middleware = $shouldSkipMiddleware ? [] : $this->gatherPipeMiddleware($pipe);
+        $middleware = $shouldSkipMiddleware ? [] : $this->gatherPipeMiddleware($pipe)->all();
 
         return (new Pipeline($this->container))
                         ->send($request)

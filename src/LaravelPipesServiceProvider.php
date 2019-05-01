@@ -3,7 +3,6 @@
 namespace Mshule\LaravelPipes;
 
 use Illuminate\Support\ServiceProvider;
-use Mshule\LaravelPipes\Contracts\ControllerDispatcher as ControllerDispatcherContract;
 
 class LaravelPipesServiceProvider extends ServiceProvider
 {
@@ -18,10 +17,6 @@ class LaravelPipesServiceProvider extends ServiceProvider
 
         $this->app->singleton(PipeRequestHandler::class, function ($app) {
             return new PipeRequestHandler($app, resolve('piper'));
-        });
-
-        $this->app->singleton(ControllerDispatcherContract::class, function ($app) {
-            return new ControllerDispatcher($app);
         });
 
         $this->publishes([

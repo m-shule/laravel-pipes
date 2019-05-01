@@ -55,8 +55,6 @@ class PipeRequestHandler
      */
     public function handle(Request $request)
     {
-        // load pipes.php file
-        // check if pipe was added
         try {
             $response = $this->sendRequestThroughPipes($request);
         } catch (NotFoundPipeException $e) {

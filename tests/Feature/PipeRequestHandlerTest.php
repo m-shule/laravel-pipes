@@ -56,15 +56,24 @@ class PipeRequestHandlerTest extends TestCase
     }
 
     /** @test */
+    public function it_can_resolve_pipes_to_controller_actions_through_using_the_fluent_api()
+    {
+        Pipe::match('text:something', '\Mshule\LaravelPipes\Tests\Fixtures\Controllers\TestController@doSomething');
+
+        $this->pipeRequest([
+                'text' => 'something',
+            ])
+            ->assertOk()
+            ->assertSee('did something');
+    }
+
+    /** @test */
     public function it_can_resolve_pipes_with_middlewares()
     {
-        $this->withoutExceptionHandling();
         Pipe::middleware(function ($request, $next) {
-            dump('middleware');
-
-            return $next();
-        })->match('text', 'middle', function () {
             return 'middleware succeeded';
+        })->match('text', 'middle', function () {
+            return 'middleware failed';
         });
 
         $this->pipeRequest([
@@ -73,4 +82,79 @@ class PipeRequestHandlerTest extends TestCase
             ->assertOk()
             ->assertSee('middleware succeeded');
     }
+
+    /** @test */
+    public function it_can_resolve_grouped_pipes_and_pass_all_attributes_to_the_contained_pipes()
+    {
+        Pipe::namespace('\Mshule\LaravelPipes\Tests\Fixtures\Controllers')
+            ->input('text')->group(function () {
+                Pipe::match('something', 'TestController@doSomething');
+            });
+
+        $this->pipeRequest([
+                'text' => 'something',
+            ])
+            ->assertOk()
+            ->assertSee('did something');
+
+        Pipe::group(
+            [
+                'namespace' => '\Mshule\LaravelPipes\Tests\Fixtures\Controllers',
+                'input' => 'other',
+            ],
+            function () {
+                Pipe::match('something', 'TestController@doSomething');
+            }
+        );
+
+        $this->pipeRequest([
+                'other' => 'something',
+            ])
+            ->assertOk()
+            ->assertSee('did something');
+    }
+
+    /** @test */
+    public function it_can_add_fallback_pipes_to_handle_any_request_which_could_not_be_matched_otherwise()
+    {
+        Pipe::fallback(function () {
+            return 'no other pipe did match up';
+        });
+
+        $this->pipeRequest(['foo' => 'bar'])
+            ->assertOk()
+            ->assertSee('no other pipe did match up');
+    }
+
+    /** @test */
+    public function it_can_match_dynamic_parameters()
+    {
+        Pipe::match('trigger:name {text}', function ($text) {
+            return "you said {$text}";
+        });
+
+        $this->pipeRequest(['trigger' => 'name', 'text' => 'something'])
+            ->assertOk()
+            ->assertSee('you said something');
+    }
+
+    /** @test */
+    public function it_can_match_dynamic_parameters_to_any_request()
+    {
+        Pipe::any('name {text}', function ($text) {
+            return "you said {$text}";
+        });
+
+        $this->pipeRequest(['bla' => 'name', 'text' => 'something'])
+            ->assertOk()
+            ->assertSee('you said something');
+    }
+
+    // /** @test */
+    // public function it_can_add_conditions_to_pipe_definitions()
+    // {
+    //     // Pipe::match('text:name', function () {
+    //     //     return ''
+    //     // })
+    // }
 }
