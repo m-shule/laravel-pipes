@@ -2,10 +2,10 @@
 
 namespace Mshule\LaravelPipes;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
-use Mshule\LaravelPipes\Matching\PathValidator;
-use Mshule\LaravelPipes\Matching\ParameterValidator;
+use Mshule\LaravelPipes\Matching\UriValidator;
 
 class Pipe extends Route
 {
@@ -134,7 +134,23 @@ class Pipe extends Route
         // validator implementations. We will spin through each one making sure it
         // passes and then we will know if the pipe as a whole matches request.
         return static::$validators = [
-            new PathValidator, new ParameterValidator
+            new UriValidator
         ];
+    }
+
+    /**
+     * Get the full path for the pipe with the replaced attributes from the request.
+     *
+     * @param Request $request
+     * @return void
+     */
+    public function path(Request $request)
+    {
+        $replacements = collect($this->parameterNames())->map(function ($param) use ($request) {
+            return $request->{$param};
+        })->toArray();
+
+        $path = preg_replace_array('/\\{[a-zA-Z]+\\}/', $replacements, $this->uri());
+        return Str::startsWith($path, '/') ? $path : '/' . $path;
     }
 }

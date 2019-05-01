@@ -20,11 +20,12 @@ class PipeGroup extends RouteGroup
         $new = array_merge($new, [
             'namespace' => static::formatNamespace($new, $old),
             'input' => static::formatInput($new, $old),
+            'where' => static::formatWhere($new, $old),
         ]);
 
         return array_merge_recursive(Arr::except(
             $old,
-            ['namespace', 'input']
+            ['namespace', 'input', 'where']
         ), $new);
     }
 

@@ -139,6 +139,18 @@ class PipeRequestHandlerTest extends TestCase
     }
 
     /** @test */
+    public function it_can_match_multiple_dynamic_parameters()
+    {
+        Pipe::any('{name} {other}', function ($name, $other) {
+            return "$name $other";
+        });
+
+        $this->pipeRequest(['name' => 'foo', 'other' => 'bar'])
+            ->assertOk()
+            ->assertSee('foo bar');
+    }
+
+    /** @test */
     public function it_can_match_dynamic_parameters_to_any_request()
     {
         Pipe::any('name {text}', function ($text) {
@@ -150,11 +162,17 @@ class PipeRequestHandlerTest extends TestCase
             ->assertSee('you said something');
     }
 
-    // /** @test */
-    // public function it_can_add_conditions_to_pipe_definitions()
-    // {
-    //     // Pipe::match('text:name', function () {
-    //     //     return ''
-    //     // })
-    // }
+    /** @test */
+    public function it_can_add_conditions_to_pipe_definitions()
+    {
+        Pipe::any('{name}', function ($name) {
+            return $name;
+        })->where('name', 'foo');
+
+        $this->pipeRequest(['name' => 'foo'])
+            ->assertOk()
+            ->assertSee('foo');
+        $this->pipeRequest(['name' => 'bar'])
+            ->assertNotFound();
+    }
 }

@@ -14,6 +14,13 @@ use Mshule\LaravelPipes\Contracts\Registrar as RegistrarContract;
 class Piper implements RegistrarContract
 {
     /**
+     * The globally available parameter patterns.
+     *
+     * @var array
+     */
+    protected $patterns = [];
+
+    /**
      * The pipe group attribute stack.
      *
      * @var array
@@ -231,6 +238,8 @@ class Piper implements RegistrarContract
             $this->mergeGroupAttributesIntoPipe($pipe);
         }
 
+        $this->addWhereClausesToPipe($pipe);
+
         return $pipe;
     }
 
@@ -307,6 +316,22 @@ class Piper implements RegistrarContract
         return (new Pipe($cue, $action, $inputs))
                     ->setPiper($this)
                     ->setContainer($this->container);
+    }
+
+    /**
+     * Add the necessary where clauses to the pipe based on its initial registration.
+     *
+     * @param  \Mshule\LaravelPipes\Pipe  $pipe
+     * @return \Mshule\LaravelPipes\Pipe
+     */
+    protected function addWhereClausesToPipe($pipe)
+    {
+        $pipe->where(array_merge(
+            $this->patterns,
+            $pipe->getAction()['where'] ?? []
+        ));
+
+        return $pipe;
     }
 
     /**

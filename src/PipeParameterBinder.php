@@ -2,7 +2,6 @@
 
 namespace Mshule\LaravelPipes;
 
-use Illuminate\Support\Str;
 use Illuminate\Routing\RouteParameterBinder;
 
 class PipeParameterBinder extends RouteParameterBinder
@@ -15,14 +14,7 @@ class PipeParameterBinder extends RouteParameterBinder
      */
     protected function bindPathParameters($request)
     {
-        $replacements = collect($this->route->parameterNames())->map(function ($param) use ($request) {
-            return $request->{$param};
-        })->toArray();
-
-        $path = preg_replace_array('/\\{[a-zA-Z]+\\}/', $replacements, $this->route->uri());
-        $path = Str::startsWith($path, '/') ? $path : '/' . $path;
-
-        preg_match($this->route->compiled->getRegex(), $path, $matches);
+        preg_match($this->route->compiled->getRegex(), $this->route->path($request), $matches);
 
         return $this->matchToKeys(array_slice($matches, 1));
     }
