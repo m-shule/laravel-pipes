@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'namespace' => 'App\Pipes\Controllers'
+    'namespace' => 'App\Pipes\Controllers',
 
     /*
     |--------------------------------------------------------------------------
