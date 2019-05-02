@@ -192,4 +192,14 @@ class PipeRequestTest extends TestCase
             ->assertOk()
             ->assertSee('You fetched Foo Bar Todo');
     }
+
+    /** @test */
+    public function it_can_load_pipes_from_files()
+    {
+        Pipe::namespace('Test')->group(__DIR__ . '/Fixtures/pipes.php');
+
+        $this->pipeRequest(['test' => 'ping'])
+            ->assertOk()
+            ->assertSee('pong');
+    }
 }

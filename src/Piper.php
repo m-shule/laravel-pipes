@@ -2,10 +2,8 @@
 
 namespace Mshule\LaravelPipes;
 
-use Closure;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use Illuminate\Container\Container;
 use Mshule\LaravelPipes\Contracts\Registrar as RegistrarContract;
@@ -20,7 +18,7 @@ class Piper extends Router implements RegistrarContract
     protected $pipes;
 
     /**
-     * Create a new Router instance.
+     * Create a new Piper instance.
      */
     public function __construct(Container $container = null)
     {
@@ -76,24 +74,6 @@ class Piper extends Router implements RegistrarContract
     }
 
     /**
-     * Create a route group with shared attributes.
-     *
-     * @param array           $attributes
-     * @param \Closure|string $pipes
-     */
-    public function group(array $attributes, $pipes)
-    {
-        $this->updateGroupStack($attributes);
-
-        // Once we have updated the group stack, we'll load the provided pipes and
-        // merge in the group's attributes when the pipes are created. After we
-        // have created the pipes, we will pop the attributes off the stack.
-        $this->loadPipes($pipes);
-
-        array_pop($this->groupStack);
-    }
-
-    /**
      * Merge the given array with the last group stack.
      *
      * @param array $new
@@ -103,21 +83,6 @@ class Piper extends Router implements RegistrarContract
     public function mergeWithLastGroup($new)
     {
         return PipeGroup::merge($new, end($this->groupStack));
-    }
-
-    /**
-     * Load the provided pipes.
-     *
-     * @param \Closure|string $pipes
-     */
-    protected function loadPipes($pipes)
-    {
-        if ($pipes instanceof Closure) {
-            $pipes($this);
-        } else {
-            throw new \Exception('Loading through files was not implemented yet');
-            // (new RouteFileRegistrar($this))->register($pipes);
-        }
     }
 
     /**
