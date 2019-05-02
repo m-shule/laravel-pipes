@@ -4,17 +4,13 @@ namespace Mshule\LaravelPipes\Tests;
 
 use Mshule\LaravelPipes\Facades\Pipe;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mshule\LaravelPipes\Testing\MakesPipeRequests;
 use Mshule\LaravelPipes\Tests\Fixtures\Models\Todo;
 use Mshule\LaravelPipes\Exceptions\NotFoundPipeException;
 
 class PipeRequestTest extends TestCase
 {
-    use RefreshDatabase;
-
-    protected function pipeRequest($data = [])
-    {
-        return $this->post(config('pipes.incoming_request_path'), $data);
-    }
+    use RefreshDatabase, MakesPipeRequests;
 
     /** @test */
     public function a_not_found_pipe_exception_is_thrown_if_no_controller_was_found()

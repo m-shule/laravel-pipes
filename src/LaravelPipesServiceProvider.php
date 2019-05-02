@@ -2,11 +2,20 @@
 
 namespace Mshule\LaravelPipes;
 
+use Mshule\LaravelPipes\Facades\Pipe;
 use Illuminate\Support\ServiceProvider;
-use Mshule\LaravelPipes\Contracts\Registrar;
 
 class LaravelPipesServiceProvider extends ServiceProvider
 {
+    /**
+     * This namespace is applied to your controller pipes.
+     *
+     * In addition, it is set as the URL generator's root namespace.
+     *
+     * @var string
+     */
+    protected $namespace = 'App\Pipes\Controllers';
+
     /**
      * Register services.
      */
@@ -22,9 +31,6 @@ class LaravelPipesServiceProvider extends ServiceProvider
 
         $this->app->alias('piper', \Mshule\LaravelPipes\Piper::class);
         $this->app->alias('piper', \Mshule\LaravelPipes\Contracts\Registrar::class);
-        // $this->app->singleton(Registrar::class, function ($app) {
-        //     return $app['piper'];
-        // });
 
         $this->publishes([
             __DIR__ . '/../config/pipes.php' => config_path('pipes.php'),
@@ -41,6 +47,34 @@ class LaravelPipesServiceProvider extends ServiceProvider
             'pipes'
         );
 
+        $this->loadRoutes();
+    }
+
+    /**
+     * Load all routes for using pipes.
+     *
+     * @return void
+     */
+    protected function loadRoutes()
+    {
         $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+
+        if (config('pipes.load_routes_file')) {
+            $this->mapPipeRoutes();
+        }
+    }
+
+    /**
+     * Define the "pipe" routes for the application.
+     *
+     * These routes are typically stateless.
+     *
+     * @return void
+     */
+    protected function mapPipeRoutes()
+    {
+        Pipe::middleware('pipe')
+             ->namespace($this->namespace)
+             ->group(base_path('routes/pipes.php'));
     }
 }

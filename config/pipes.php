@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'load_routes_file' => false,
+
     /*
     |--------------------------------------------------------------------------
     | Incoming Request Path
