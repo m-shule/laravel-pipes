@@ -3,6 +3,7 @@
 namespace Mshule\LaravelPipes;
 
 use Illuminate\Support\ServiceProvider;
+use Mshule\LaravelPipes\Contracts\Registrar;
 
 class LaravelPipesServiceProvider extends ServiceProvider
 {
@@ -12,12 +13,18 @@ class LaravelPipesServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton('piper', function ($app) {
-            return new Piper();
+            return new Piper($app);
         });
 
-        $this->app->singleton(PipeRequestHandler::class, function ($app) {
-            return new PipeRequestHandler($app, resolve('piper'));
+        $this->app->singleton(Kernel::class, function ($app) {
+            return new Kernel($app, resolve('piper'));
         });
+
+        $this->app->alias('piper', \Mshule\LaravelPipes\Piper::class);
+        $this->app->alias('piper', \Mshule\LaravelPipes\Contracts\Registrar::class);
+        // $this->app->singleton(Registrar::class, function ($app) {
+        //     return $app['piper'];
+        // });
 
         $this->publishes([
             __DIR__ . '/../config/pipes.php' => config_path('pipes.php'),

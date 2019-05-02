@@ -1,13 +1,16 @@
 <?php
 
-namespace Mshule\LaravelPipes\Tests\Feature;
+namespace Mshule\LaravelPipes\Tests;
 
 use Mshule\LaravelPipes\Facades\Pipe;
-use Mshule\LaravelPipes\Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mshule\LaravelPipes\Tests\Fixtures\Models\Todo;
 use Mshule\LaravelPipes\Exceptions\NotFoundPipeException;
 
-class PipeRequestHandlerTest extends TestCase
+class PipeRequestTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function pipeRequest($data = [])
     {
         return $this->post(config('pipes.incoming_request_path'), $data);
@@ -174,5 +177,19 @@ class PipeRequestHandlerTest extends TestCase
             ->assertSee('foo');
         $this->pipeRequest(['name' => 'bar'])
             ->assertNotFound();
+    }
+
+    /** @test */
+    public function it_can_bind_models_to_pipe_requests()
+    {
+        $todo = Todo::create(['name' => 'Foo Bar']);
+
+        Pipe::middleware('pipe')->any('{todo}', function (Todo $todo) {
+            return "You fetched {$todo->name} Todo";
+        });
+
+        $this->pipeRequest(['todo' => $todo->id])
+            ->assertOk()
+            ->assertSee('You fetched Foo Bar Todo');
     }
 }

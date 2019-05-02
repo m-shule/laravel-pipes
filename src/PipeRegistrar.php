@@ -21,7 +21,7 @@ class PipeRegistrar
      * @var array
      */
     protected $passthru = [
-        'match',
+        'match', 'any'
     ];
 
     /**
@@ -50,7 +50,6 @@ class PipeRegistrar
      * @param mixed  $value
      *
      * @throws \InvalidArgumentException
-     *
      * @return $this
      */
     public function attribute($key, $value)
@@ -75,28 +74,39 @@ class PipeRegistrar
     }
 
     /**
+     * Register a new pipe with the given verbs.
+     *
+     * @param string                         $inputs
+     * @param string                         $cue
+     * @param \Closure|array|string|callable $action
+     * @return \Mshule\LaravelPipes\Pipe
+     */
+    public function match($inputs, $cue, $action = null)
+    {
+        return $this->piper->match($inputs, $cue, $this->compileAction($action));
+    }
+
+    /**
      * Register a new pipe with the piper.
      *
      * @param string                     $method
      * @param string                     $uri
      * @param \Closure|array|string|null $action
-     *
      * @return \Mshule\LaravelPipes\Pipe
      */
-    protected function registerPipe($method, $attributes, $cue, $action = null)
+    protected function registerPipe($method, $cue, $action = null)
     {
         if (! is_array($action)) {
             $action = array_merge($this->attributes, $action ? ['uses' => $action] : []);
         }
 
-        return $this->piper->{$method}($attributes, $cue, $this->compileAction($action));
+        return $this->piper->{$method}($cue, $this->compileAction($action));
     }
 
     /**
      * Compile the action into an array including the attributes.
      *
      * @param \Closure|array|string|null $action
-     *
      * @return array
      */
     protected function compileAction($action)
@@ -119,7 +129,6 @@ class PipeRegistrar
      * @param array  $parameters
      *
      * @throws \BadMethodCallException
-     *
      * @return \Mshule\LaravelPipes\Pipe|$this
      */
     public function __call($method, $parameters)

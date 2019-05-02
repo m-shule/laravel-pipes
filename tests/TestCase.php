@@ -6,6 +6,13 @@ use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->loadMigrationsFrom(__DIR__ . '/Fixtures/Migrations');
+    }
+
     /**
      * Get package providers.
      *

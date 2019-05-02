@@ -5,62 +5,19 @@ namespace Mshule\LaravelPipes;
 use Closure;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Pipeline;
+use Illuminate\Routing\Route;
+use Illuminate\Routing\Router;
 use Illuminate\Container\Container;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Routing\MiddlewareNameResolver;
 use Mshule\LaravelPipes\Contracts\Registrar as RegistrarContract;
 
-class Piper implements RegistrarContract
+class Piper extends Router implements RegistrarContract
 {
-    /**
-     * The globally available parameter patterns.
-     *
-     * @var array
-     */
-    protected $patterns = [];
-
-    /**
-     * The pipe group attribute stack.
-     *
-     * @var array
-     */
-    protected $groupStack = [];
-
-    /**
-     * The IoC container instance.
-     *
-     * @var \Illuminate\Container\Container
-     */
-    protected $container;
-
     /**
      * The pipe collection instance.
      *
      * @var \Mshule\LaravelPipes\PipeCollection
      */
     protected $pipes;
-
-    /**
-     * The currently dispatched route instance.
-     *
-     * @var \Illuminate\Routing\Route|null
-     */
-    protected $current;
-
-    /**
-     * The request currently being dispatched.
-     *
-     * @var \Illuminate\Http\Request
-     */
-    protected $currentRequest;
-
-    /**
-     * All of the short-hand keys for middlewares.
-     *
-     * @var array
-     */
-    protected $middleware = [];
 
     /**
      * Create a new Router instance.
@@ -137,20 +94,6 @@ class Piper implements RegistrarContract
     }
 
     /**
-     * Update the group stack with the given attributes.
-     *
-     * @param array $attributes
-     */
-    protected function updateGroupStack(array $attributes)
-    {
-        if (! empty($this->groupStack)) {
-            $attributes = $this->mergeWithLastGroup($attributes);
-        }
-
-        $this->groupStack[] = $attributes;
-    }
-
-    /**
      * Merge the given array with the last group stack.
      *
      * @param array $new
@@ -188,7 +131,21 @@ class Piper implements RegistrarContract
      */
     public function addPipe($inputs, $cue, $action = [])
     {
+        // dd(func_get_args());
         return $this->pipes->add($this->createPipe($inputs, $cue, $action));
+    }
+
+    /**
+     * Add a route to the underlying route collection.
+     *
+     * @param  array|string  $methods
+     * @param  string  $uri
+     * @param  \Closure|array|string|callable|null  $action
+     * @return void
+     */
+    public function addRoute($methods, $uri, $action)
+    {
+        $this->handleNotIntendedMethods();
     }
 
     /**
@@ -202,6 +159,7 @@ class Piper implements RegistrarContract
      */
     protected function createPipe($inputs, $cue, $action = [])
     {
+        // dd(func_get_args());
         // if the input was passed in combination with the cue
         // seperated by a colon (:), the values need to
         // be reassigned to the right variable.
@@ -235,71 +193,12 @@ class Piper implements RegistrarContract
         // pipe has already been created and is ready to go. After we're done with
         // the merge we will be ready to return the pipe back out to the caller.
         if ($this->hasGroupStack()) {
-            $this->mergeGroupAttributesIntoPipe($pipe);
+            $this->mergeGroupAttributesIntoRoute($pipe);
         }
 
-        $this->addWhereClausesToPipe($pipe);
+        $this->addWhereClausesToRoute($pipe);
 
         return $pipe;
-    }
-
-    /**
-     * Determine if the action is pointing to a controller.
-     *
-     * @param array $action
-     *
-     * @return bool
-     */
-    protected function actionReferencesController($action)
-    {
-        if (! $action instanceof Closure) {
-            return is_string($action) || (isset($action['uses']) && is_string($action['uses']));
-        }
-
-        return false;
-    }
-
-    /**
-     * Add a controller based pipe action to the action array.
-     *
-     * @param array|string $action
-     *
-     * @return array
-     */
-    protected function convertToControllerAction($action)
-    {
-        if (is_string($action)) {
-            $action = ['uses' => $action];
-        }
-
-        // Here we'll merge any group "uses" statement if necessary so that the action
-        // has the proper clause for this property. Then we can simply set the name
-        // of the controller on the action and return the action array for usage.
-        if (! empty($this->groupStack)) {
-            $action['uses'] = $this->prependGroupNamespace($action['uses']);
-        }
-
-        // Here we will set this controller name on the action array just so we always
-        // have a copy of it for reference if we need it. This can be used while we
-        // search for a controller name or do some other type of fetch operation.
-        $action['controller'] = $action['uses'];
-
-        return $action;
-    }
-
-    /**
-     * Prepend the last group namespace onto the use clause.
-     *
-     * @param string $class
-     *
-     * @return string
-     */
-    protected function prependGroupNamespace($class)
-    {
-        $group = end($this->groupStack);
-
-        return isset($group['namespace']) && 0 !== strpos($class, '\\')
-                ? $group['namespace'] . '\\' . $class : $class;
     }
 
     /**
@@ -319,53 +218,13 @@ class Piper implements RegistrarContract
     }
 
     /**
-     * Add the necessary where clauses to the pipe based on its initial registration.
-     *
-     * @param  \Mshule\LaravelPipes\Pipe  $pipe
-     * @return \Mshule\LaravelPipes\Pipe
-     */
-    protected function addWhereClausesToPipe($pipe)
-    {
-        $pipe->where(array_merge(
-            $this->patterns,
-            $pipe->getAction()['where'] ?? []
-        ));
-
-        return $pipe;
-    }
-
-    /**
-     * Merge the group stack with the controller action.
-     *
-     * @param \Mshule\LaravelPipes\Pipe $pipe
-     */
-    protected function mergeGroupAttributesIntoPipe($pipe)
-    {
-        $pipe->setAction($this->mergeWithLastGroup($pipe->getAction()));
-    }
-
-    /**
-     * Dispatch the request to the application.
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
-     */
-    public function dispatch(Request $request)
-    {
-        $this->currentRequest = $request;
-
-        return $this->dispatchToPipe($request);
-    }
-
-    /**
      * Dispatch the request to a pipe and return the response.
      *
      * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      */
-    public function dispatchToPipe(Request $request)
+    public function dispatchToRoute(Request $request)
     {
         return $this->runPipe($request, $this->findPipe($request));
     }
@@ -380,8 +239,6 @@ class Piper implements RegistrarContract
     {
         $this->current = $pipe = $this->pipes->match($request);
 
-        // $this->container->instance(Pipe::class, $pipe);
-
         return $pipe;
     }
 
@@ -395,90 +252,25 @@ class Piper implements RegistrarContract
      */
     protected function runPipe(Request $request, Pipe $pipe)
     {
-        // $this->events->dispatch(new Events\RouteMatched($pipe, $request));
+        $request->setPipeResolver(function () use ($pipe) {
+            return $pipe;
+        });
 
         return $this->prepareResponse(
             $request,
-            $this->runPipeWithinStack($pipe, $request)
+            $this->runRouteWithinStack($pipe, $request)
         );
     }
 
     /**
-     * Run the given pipe within a Stack "onion" instance.
+     * Throws exceptions to notify user of methods not allowed to use in a pipe context.
      *
-     * @param \Mshule\LaravelPipes\Pipe $pipe
-     * @param \Illuminate\Http\Request  $request
-     *
-     * @return mixed
+     * @throws Exception
+     * @return void
      */
-    protected function runPipeWithinStack(Pipe $pipe, Request $request)
+    private function handleNotIntendedMethods()
     {
-        $shouldSkipMiddleware = $this->container->bound('middleware.disable') &&
-                                true === $this->container->make('middleware.disable');
-
-        $middleware = $shouldSkipMiddleware ? [] : $this->gatherPipeMiddleware($pipe)->all();
-
-        return (new Pipeline($this->container))
-                        ->send($request)
-                        ->through($middleware)
-                        ->then(function ($request) use ($pipe) {
-                            return $this->prepareResponse(
-                                $request,
-                                $pipe->run()
-                            );
-                        });
-    }
-
-    /**
-     * Gather the middleware for the given pipe with resolved class names.
-     *
-     * @param \Mshule\LaravelPipes\Pipe $pipe
-     *
-     * @return array
-     */
-    public function gatherPipeMiddleware(Pipe $pipe)
-    {
-        return collect($pipe->gatherMiddleware())->map(function ($name) {
-            return (array) MiddlewareNameResolver::resolve($name, $this->middleware, []);
-        })->flatten();
-    }
-
-    /**
-     * Create a response instance from the given value.
-     *
-     * @param \Symfony\Component\HttpFoundation\Request $request
-     * @param mixed                                     $response
-     *
-     * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
-     */
-    public function prepareResponse($request, $response)
-    {
-        return Route::toResponse($request, $response);
-    }
-
-    /**
-     * Register a short-hand name for a middleware.
-     *
-     * @param string $name
-     * @param string $class
-     *
-     * @return $this
-     */
-    public function aliasMiddleware($name, $class)
-    {
-        $this->middleware[$name] = $class;
-
-        return $this;
-    }
-
-    /**
-     * Determine if the piper currently has a group stack.
-     *
-     * @return bool
-     */
-    public function hasGroupStack()
-    {
-        return ! empty($this->groupStack);
+        throw new Exception('The methods solely used by the router instance are not intended to be used in a pipe context!');
     }
 
     /**
@@ -491,6 +283,10 @@ class Piper implements RegistrarContract
      */
     public function __call($method, $parameters)
     {
+        if (static::hasMacro($method)) {
+            return $this->macroCall($method, $parameters);
+        }
+
         if ('middleware' === $method) {
             return (new PipeRegistrar($this))->attribute($method, is_array($parameters[0]) ? $parameters[0] : $parameters);
         }

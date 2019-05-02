@@ -1,10 +1,14 @@
 <?php
 
 use Illuminate\Http\Request;
-use Mshule\LaravelPipes\PipeRequestHandler;
+use Mshule\LaravelPipes\Kernel;
 
 Route::post(config('pipes.incoming_request_path'), function (Request $request) {
-    $pipeResponse = resolve(PipeRequestHandler::class)->handle($request);
+    $kernel = resolve(Kernel::class);
 
-    return $pipeResponse;
+    $response = $kernel->handle($request);
+
+    $kernel->terminate($request, $response);
+
+    return $response;
 });
