@@ -8,15 +8,6 @@ use Illuminate\Support\ServiceProvider;
 class LaravelPipesServiceProvider extends ServiceProvider
 {
     /**
-     * This namespace is applied to your controller pipes.
-     *
-     * In addition, it is set as the URL generator's root namespace.
-     *
-     * @var string
-     */
-    protected $namespace = 'App\Pipes\Controllers';
-
-    /**
      * Register services.
      */
     public function register()
@@ -74,7 +65,7 @@ class LaravelPipesServiceProvider extends ServiceProvider
     protected function mapPipeRoutes()
     {
         Pipe::middleware('pipe')
-             ->namespace($this->namespace)
+             ->namespace(config('pipes.namespace'))
              ->group(base_path('routes/pipes.php'));
     }
 }

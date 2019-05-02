@@ -30,7 +30,7 @@ class PipeRegistrar
      * @var array
      */
     protected $allowedAttributes = [
-        'middleware', 'namespace', 'input',
+        'middleware', 'namespace', 'attributes',
     ];
 
     /**

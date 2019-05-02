@@ -18,13 +18,13 @@ class PipeRequestTest extends TestCase
         $this->withoutExceptionHandling();
         $this->expectException(NotFoundPipeException::class);
 
-        $this->pipeRequest();
+        $this->pipe();
     }
 
     /** @test */
     public function it_renders_a_not_found_pipe_exception_as_404_not_found_http_response()
     {
-        $this->pipeRequest()
+        $this->pipe()
             ->assertNotFound();
     }
 
@@ -35,7 +35,7 @@ class PipeRequestTest extends TestCase
             return response('pipe was resolved', 200);
         });
 
-        $this->pipeRequest([
+        $this->pipe([
                 'text' => 'test',
             ])
             ->assertOk()
@@ -47,7 +47,7 @@ class PipeRequestTest extends TestCase
     {
         Pipe::match('text', 'something', '\Mshule\LaravelPipes\Tests\Fixtures\Controllers\TestController@doSomething');
 
-        $this->pipeRequest([
+        $this->pipe([
                 'text' => 'something',
             ])
             ->assertOk()
@@ -59,7 +59,7 @@ class PipeRequestTest extends TestCase
     {
         Pipe::match('text:something', '\Mshule\LaravelPipes\Tests\Fixtures\Controllers\TestController@doSomething');
 
-        $this->pipeRequest([
+        $this->pipe([
                 'text' => 'something',
             ])
             ->assertOk()
@@ -75,7 +75,7 @@ class PipeRequestTest extends TestCase
             return 'middleware failed';
         });
 
-        $this->pipeRequest([
+        $this->pipe([
                 'text' => 'middle',
             ])
             ->assertOk()
@@ -85,12 +85,13 @@ class PipeRequestTest extends TestCase
     /** @test */
     public function it_can_resolve_grouped_pipes_and_pass_all_attributes_to_the_contained_pipes()
     {
-        Pipe::namespace('\Mshule\LaravelPipes\Tests\Fixtures\Controllers')
-            ->input('text')->group(function () {
-                Pipe::match('something', 'TestController@doSomething');
+        Pipe::attributes('text')->group(function () {
+            Pipe::match('something', function () {//'TestController@doSomething');
+                return 'did something';
             });
+        });
 
-        $this->pipeRequest([
+        $this->pipe([
                 'text' => 'something',
             ])
             ->assertOk()
@@ -106,7 +107,7 @@ class PipeRequestTest extends TestCase
             }
         );
 
-        $this->pipeRequest([
+        $this->pipe([
                 'other' => 'something',
             ])
             ->assertOk()
@@ -120,7 +121,7 @@ class PipeRequestTest extends TestCase
             return 'no other pipe did match up';
         });
 
-        $this->pipeRequest(['foo' => 'bar'])
+        $this->pipe(['foo' => 'bar'])
             ->assertOk()
             ->assertSee('no other pipe did match up');
     }
@@ -132,7 +133,7 @@ class PipeRequestTest extends TestCase
             return "you said {$text}";
         });
 
-        $this->pipeRequest(['trigger' => 'name', 'text' => 'something'])
+        $this->pipe(['trigger' => 'name', 'text' => 'something'])
             ->assertOk()
             ->assertSee('you said something');
     }
@@ -144,7 +145,7 @@ class PipeRequestTest extends TestCase
             return "$name $other";
         });
 
-        $this->pipeRequest(['name' => 'foo', 'other' => 'bar'])
+        $this->pipe(['name' => 'foo', 'other' => 'bar'])
             ->assertOk()
             ->assertSee('foo bar');
     }
@@ -156,7 +157,7 @@ class PipeRequestTest extends TestCase
             return "you said {$text}";
         });
 
-        $this->pipeRequest(['bla' => 'name', 'text' => 'something'])
+        $this->pipe(['bla' => 'name', 'text' => 'something'])
             ->assertOk()
             ->assertSee('you said something');
     }
@@ -168,10 +169,10 @@ class PipeRequestTest extends TestCase
             return $name;
         })->where('name', 'foo');
 
-        $this->pipeRequest(['name' => 'foo'])
+        $this->pipe(['name' => 'foo'])
             ->assertOk()
             ->assertSee('foo');
-        $this->pipeRequest(['name' => 'bar'])
+        $this->pipe(['name' => 'bar'])
             ->assertNotFound();
     }
 
@@ -184,7 +185,7 @@ class PipeRequestTest extends TestCase
             return "You fetched {$todo->name} Todo";
         });
 
-        $this->pipeRequest(['todo' => $todo->id])
+        $this->pipe(['todo' => $todo->id])
             ->assertOk()
             ->assertSee('You fetched Foo Bar Todo');
     }
@@ -194,7 +195,7 @@ class PipeRequestTest extends TestCase
     {
         Pipe::namespace('Test')->group(__DIR__ . '/Fixtures/pipes.php');
 
-        $this->pipeRequest(['test' => 'ping'])
+        $this->pipe(['test' => 'ping'])
             ->assertOk()
             ->assertSee('pong');
     }

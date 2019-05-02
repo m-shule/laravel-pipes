@@ -37,6 +37,15 @@ class Kernel extends HttpKernel
     ];
 
     /**
+     * The application's route middleware.
+     *
+     * @var array
+     */
+    protected $routeMiddleware = [
+        'bindings' => \Mshule\LaravelPipes\Http\Middleware\SubstituteBindings::class,
+    ];
+
+    /**
      * The priority-sorted list of middleware.
      *
      * Forces non-global middleware to always be in the given order.
