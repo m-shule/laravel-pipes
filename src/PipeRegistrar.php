@@ -21,7 +21,7 @@ class PipeRegistrar
      * @var array
      */
     protected $passthru = [
-        'match', 'any'
+        'match', 'any',
     ];
 
     /**
@@ -30,7 +30,7 @@ class PipeRegistrar
      * @var array
      */
     protected $allowedAttributes = [
-        'middleware', 'namespace', 'attributes',
+        'middleware', 'namespace', 'key', 'alias', 'where',
     ];
 
     /**
@@ -50,6 +50,7 @@ class PipeRegistrar
      * @param mixed  $value
      *
      * @throws \InvalidArgumentException
+     *
      * @return $this
      */
     public function attribute($key, $value)
@@ -79,6 +80,7 @@ class PipeRegistrar
      * @param string                         $inputs
      * @param string                         $cue
      * @param \Closure|array|string|callable $action
+     *
      * @return \Mshule\LaravelPipes\Pipe
      */
     public function match($inputs, $cue, $action = null)
@@ -92,6 +94,7 @@ class PipeRegistrar
      * @param string                     $method
      * @param string                     $uri
      * @param \Closure|array|string|null $action
+     *
      * @return \Mshule\LaravelPipes\Pipe
      */
     protected function registerPipe($method, $cue, $action = null)
@@ -107,6 +110,7 @@ class PipeRegistrar
      * Compile the action into an array including the attributes.
      *
      * @param \Closure|array|string|null $action
+     *
      * @return array
      */
     protected function compileAction($action)
@@ -129,6 +133,7 @@ class PipeRegistrar
      * @param array  $parameters
      *
      * @throws \BadMethodCallException
+     *
      * @return \Mshule\LaravelPipes\Pipe|$this
      */
     public function __call($method, $parameters)

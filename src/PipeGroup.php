@@ -19,13 +19,13 @@ class PipeGroup extends RouteGroup
     {
         $new = array_merge($new, [
             'namespace' => static::formatNamespace($new, $old),
-            'attributes' => static::formatAttributes($new, $old),
+            'key' => static::formatKey($new, $old),
             'where' => static::formatWhere($new, $old),
         ]);
 
         return array_merge_recursive(Arr::except(
             $old,
-            ['namespace', 'attributes', 'where']
+            ['namespace', 'key', 'where']
         ), $new);
     }
 
@@ -37,10 +37,10 @@ class PipeGroup extends RouteGroup
      *
      * @return string|null
      */
-    public static function formatAttributes($new, $old)
+    public static function formatKey($new, $old)
     {
-        return isset($new['attributes'])
-            ? $new['attributes']
-            : ($old['attributes'] ?? null);
+        return isset($new['key'])
+            ? $new['key']
+            : ($old['key'] ?? null);
     }
 }

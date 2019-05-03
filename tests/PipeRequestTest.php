@@ -134,12 +134,12 @@ class PipeRequestTest extends TestCase
     }
 
     /** @test */
-    public function it_can_resolve_grouped_pipes_and_pass_all_attributes_to_the_contained_pipes()
+    public function it_can_resolve_grouped_pipes_and_pass_all_key_to_the_contained_pipes()
     {
         Pipe::fake();
 
-        Pipe::attributes('text')->group(function () {
-            Pipe::match('something', function () {//'TestController@doSomething');
+        Pipe::key('text')->group(function () {
+            Pipe::match('something', function () {
                 return 'did one';
             });
         });
@@ -152,28 +152,6 @@ class PipeRequestTest extends TestCase
             $response->assertOk()
                 ->assertSee('did one');
         });
-
-        Pipe::afterResponse(function () {
-            Pipe::group(
-                [
-                    'namespace' => '\Mshule\LaravelPipes\Tests\Fixtures\Controllers',
-                    'input' => 'other',
-                ],
-                function () {
-                    Pipe::match('something', 'TestController@doSomething');
-                }
-            );
-
-            $this->pipe([
-                'other' => 'something',
-            ]);
-
-            Pipe::assertResponded(function ($response) {
-                $response->assertOk()
-                    ->assertSee('did something');
-            });
-        });
-        ;
     }
 
     /** @test */
@@ -213,6 +191,7 @@ class PipeRequestTest extends TestCase
     /** @test */
     public function it_can_match_multiple_dynamic_parameters()
     {
+        $this->withoutExceptionHandling();
         Pipe::fake();
 
         Pipe::any('{name} {other}', function ($name, $other) {
@@ -259,20 +238,45 @@ class PipeRequestTest extends TestCase
             $response->assertOk()
                 ->assertSee('foo');
         });
+    }
 
-        Pipe::afterResponse(function () {
-            $this->pipe(['name' => 'bar']);
+    /** @test */
+    public function it_can_add_aliases_to_pipes()
+    {
+        Pipe::fake();
 
-            Pipe::assertResponded(function ($response) {
-                $response->assertNotFound();
-            });
+        Pipe::any('mshule', function () {
+            return 'matched';
+        })->alias(['mhule', 'mule']);
+
+        $this->pipe(['foo' => 'mule']);
+
+        Pipe::assertResponded(function ($response) {
+            $response->assertOk()
+                ->assertSee('matched');
+        });
+    }
+
+    /** @test */
+    public function it_can_add_aliases_predefined_to_pipes()
+    {
+        Pipe::fake();
+
+        Pipe::alias(['mhule', 'mule'])->any('mshule', function () {
+            return 'matched';
+        });
+
+        $this->pipe(['foo' => 'mule']);
+
+        Pipe::assertResponded(function ($response) {
+            $response->assertOk()
+                ->assertSee('matched');
         });
     }
 
     /** @test */
     public function it_can_bind_models_to_pipe_requests()
     {
-        $this->withoutExceptionHandling();
         Pipe::fake();
 
         $todo = Todo::create(['name' => 'Foo Bar']);

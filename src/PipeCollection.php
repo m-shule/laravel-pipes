@@ -5,6 +5,7 @@ namespace Mshule\LaravelPipes;
 use Countable;
 use ArrayIterator;
 use IteratorAggregate;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Mshule\LaravelPipes\Exceptions\NotFoundPipeException;
 
@@ -46,12 +47,10 @@ class PipeCollection implements Countable, IteratorAggregate
     protected function addToCollections($pipe)
     {
         $cue = $pipe->cue();
+        $key = $pipe->key();
 
-        foreach ($pipe->inputs() as $attribute) {
-            $this->pipes[$attribute][$cue] = $pipe;
-        }
-
-        $this->allPipes[$attribute . $cue] = $pipe;
+        $this->pipes[$key][$cue] = $pipe;
+        $this->allPipes[$key . $cue] = $pipe;
     }
 
     /**
@@ -64,13 +63,7 @@ class PipeCollection implements Countable, IteratorAggregate
      */
     public function match(Request $request)
     {
-        $attributeKeys = array_keys($request->all());
-
-        if (count($attributeKeys) === 0) {
-            throw new NotFoundPipeException(request());
-        }
-
-        $pipes = $this->get($attributeKeys);
+        $pipes = $this->get($request->keys());
 
         // First, we will see if we can find a matching pipe for this current request
         // method. If we can, great, we can just return it so that it can be called
@@ -82,6 +75,28 @@ class PipeCollection implements Countable, IteratorAggregate
         }
 
         throw new NotFoundPipeException($request);
+    }
+
+    /**
+     * Get pipes from the collection by attribute.
+     *
+     * @param string|null $
+     *
+     * @return array
+     */
+    public function get($keys = [])
+    {
+        if (0 === count($keys)) {
+            return $this->getPipes();
+        }
+
+        array_push($keys, resolve('pipe_any'));
+
+        return collect($keys)->map(function ($key) {
+            return Arr::get($this->pipes, $key, []);
+        })
+            ->flatten()
+            ->toArray();
     }
 
     /**
@@ -101,23 +116,6 @@ class PipeCollection implements Countable, IteratorAggregate
         return $pipes->merge($fallbacks)->first(function ($value) use ($request) {
             return $value->matches($request);
         });
-    }
-
-    /**
-     * Get pipes from the collection by attribute.
-     *
-     * @param string|null $
-     *
-     * @return array
-     */
-    public function get($keys = [])
-    {
-        return collect($this->pipes)
-            ->filter(function ($value, $key) use ($keys) {
-                return '*' === $key || in_array($key, $keys);
-            })
-            ->flatten()
-            ->toArray();
     }
 
     /**

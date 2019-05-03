@@ -13,7 +13,8 @@ class Pipe extends Facade
     /**
      * Replace the bound instance with a fake.
      *
-     * @param  array|string  $eventsToFake
+     * @param array|string $eventsToFake
+     *
      * @return \Illuminate\Support\Testing\Fakes\EventFake
      */
     public static function fake($eventsToFake = [])

@@ -40,50 +40,59 @@ class Piper extends Router implements RegistrarContract
      * @param string                         $inputs
      * @param string                         $cue
      * @param \Closure|array|string|callable $action
+     *
      * @return \Mshule\LaravelPipes\Pipe
      */
     public function any($cue, $action = [])
     {
-        return $this->addPipe('*', $cue, $action);
+        return $this->addPipe(resolve('pipe_any'), $cue, $action);
     }
 
     /**
      * Register a new Fallback pipe with the piper.
      *
      * @param \Closure|array|string|callable|null $action
+     *
      * @return \Mshule\LaravelPipes\Pipe
      */
     public function fallback($action)
     {
-        return $this->addPipe('*:*', $action)
-            ->fallback();
+        $placeholder = 'fallbackPlaceholder';
+
+        return $this->addPipe(
+            resolve('pipe_any'),
+            "{{$placeholder}}",
+            $action
+        )->where($placeholder, '.*')->fallback();
     }
 
     /**
      * Register a new pipe with the given verbs.
      *
-     * @param string                         $inputs
+     * @param string                         $key
      * @param string                         $cue
      * @param \Closure|array|string|callable $action
+     *
      * @return \Mshule\LaravelPipes\Pipe
      */
-    public function match($inputs, $cue, $action = [])
+    public function match($key, $cue, $action = [])
     {
         // If only two arguments were entered and the first
         // does not contain a colon (:), we assume the
         // user either wants to allow any input or
         // will specify a specific input later on
-        if (2 === count(func_get_args()) && (is_string($inputs) && ! Str::contains($inputs, ':'))) {
-            return $this->any($inputs, $cue);
+        if (2 === count(func_get_args()) && (is_string($key) && ! Str::contains($key, ':'))) {
+            return $this->addPipe('placeholder', $key, $cue);
         }
 
-        return $this->addPipe($inputs, $cue, $action);
+        return $this->addPipe($key, $cue, $action);
     }
 
     /**
      * Merge the given array with the last group stack.
      *
      * @param array $new
+     *
      * @return array
      */
     public function mergeWithLastGroup($new)
@@ -97,20 +106,20 @@ class Piper extends Router implements RegistrarContract
      * @param string                         $inputs
      * @param string                         $cue
      * @param \Closure|array|string|callable $action
+     *
      * @return \Mshule\LaravelPipes\Pipe
      */
-    public function addPipe($inputs, $cue, $action = [])
+    public function addPipe($key, $cue, $action = [])
     {
-        return $this->pipes->add($this->createPipe($inputs, $cue, $action));
+        return $this->pipes->add($this->createPipe($key, $cue, $action));
     }
 
     /**
      * Add a route to the underlying route collection.
      *
-     * @param  array|string  $methods
-     * @param  string  $uri
-     * @param  \Closure|array|string|callable|null  $action
-     * @return void
+     * @param array|string                        $methods
+     * @param string                              $uri
+     * @param \Closure|array|string|callable|null $action
      */
     public function addRoute($methods, $uri, $action)
     {
@@ -120,20 +129,20 @@ class Piper extends Router implements RegistrarContract
     /**
      * Create a new pipe instance.
      *
-     * @param string $inputs
+     * @param string $key
      * @param string $cue
      * @param mixed  $action
+     *
      * @return \Mshule\LaravelPipes\Pipe
      */
-    protected function createPipe($inputs, $cue, $action = [])
+    protected function createPipe($key, $cue, $action = [])
     {
-        // dd(func_get_args());
         // if the input was passed in combination with the cue
         // seperated by a colon (:), the values need to
         // be reassigned to the right variable.
-        if (is_string($inputs) && Str::contains($inputs, ':')) {
-            list($inputs, $cue, $action) = array_merge(
-                explode(':', $inputs),
+        if (is_string($key) && Str::contains($key, ':')) {
+            list($key, $cue, $action) = array_merge(
+                explode(':', $key),
                 [array_merge(['uses' => $cue], $action)]
             );
         }
@@ -141,7 +150,7 @@ class Piper extends Router implements RegistrarContract
         // if the input was passed through the fluent api the
         // order of the func argument have to be rearranged.
         if (is_callable($cue) || Str::contains($cue, '@')) {
-            list($inputs, $cue, $action) = [$action, $inputs, $cue];
+            list($key, $cue, $action) = [$action, $key, $cue];
         }
 
         // If the pipe is pointing to a controller we will parse the pipe action into
@@ -154,7 +163,7 @@ class Piper extends Router implements RegistrarContract
         $pipe = $this->newPipe(
             $cue,
             $action,
-            $inputs
+            $key
         );
 
         // If we have groups that need to be merged, we will merge them now after this
@@ -174,12 +183,13 @@ class Piper extends Router implements RegistrarContract
      *
      * @param string       $cue
      * @param mixed        $action
-     * @param array|string $inputs
+     * @param array|string $key
+     *
      * @return \Mshule\LaravelPipes\Pipe
      */
-    protected function newPipe($cue, $action, $inputs = [])
+    protected function newPipe($cue, $action, $key = '')
     {
-        return (new Pipe($cue, $action, $inputs))
+        return (new Pipe($cue, $action, $key))
                     ->setPiper($this)
                     ->setContainer($this->container);
     }
@@ -188,6 +198,7 @@ class Piper extends Router implements RegistrarContract
      * Dispatch the request to a pipe and return the response.
      *
      * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      */
     public function dispatchToRoute(Request $request)
@@ -213,6 +224,7 @@ class Piper extends Router implements RegistrarContract
      *
      * @param \Illuminate\Http\Request  $request
      * @param \Mshule\LaravelPipes\Pipe $pipe
+     *
      * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      */
     protected function runPipe(Request $request, Pipe $pipe)
@@ -229,6 +241,7 @@ class Piper extends Router implements RegistrarContract
 
     /**
      * Get the response resolver callback.
+     *
      * @return \Closure
      */
     public function getResponseResolver()
@@ -241,7 +254,8 @@ class Piper extends Router implements RegistrarContract
     /**
      * Set the response resolver callback.
      *
-     * @param  \Closure  $callback
+     * @param \Closure $callback
+     *
      * @return $this
      */
     public function setResponseResolver(Closure $callback)
@@ -253,6 +267,7 @@ class Piper extends Router implements RegistrarContract
 
     /**
      * Return standard response.
+     *
      * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      */
     public function response($request)
@@ -264,7 +279,6 @@ class Piper extends Router implements RegistrarContract
      * Throws exceptions to notify user of methods not allowed to use in a pipe context.
      *
      * @throws Exception
-     * @return void
      */
     private function handleNotIntendedMethods()
     {
@@ -276,6 +290,7 @@ class Piper extends Router implements RegistrarContract
      *
      * @param string $method
      * @param array  $parameters
+     *
      * @return mixed
      */
     public function __call($method, $parameters)

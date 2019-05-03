@@ -13,7 +13,6 @@ class PipeFake extends Piper
      * Assert if a request was dispatched based on a truth-test callback.
      *
      * @param \Closure $callback
-     * @return void
      */
     public function assertRequested($callback = null)
     {
@@ -26,7 +25,6 @@ class PipeFake extends Piper
      * Assert if a response was dispatched based on a truth-test callback.
      *
      * @param \Closure $callback
-     * @return void
      */
     public function assertResponded($callback = null)
     {
@@ -39,7 +37,8 @@ class PipeFake extends Piper
      * Get truth test callback.
      *
      * @param \Closure|null $callback
-     * @param string|null $property
+     * @param string|null   $property
+     *
      * @return \Closure
      */
     protected function getTruthTestCallback($callback = null, $property = null)
@@ -51,22 +50,5 @@ class PipeFake extends Piper
                 return true;
             }
         : null;
-    }
-
-    public function afterResponse($listener)
-    {
-        $this->listen(IncomingPipeResponse::class, $listener);
-    }
-
-    /**
-     * Register an event listener with the dispatcher.
-     *
-     * @param  string|array  $events
-     * @param  mixed  $listener
-     * @return void
-     */
-    public function listen($events, $listener)
-    {
-        Event::listen($events, $listener);
     }
 }

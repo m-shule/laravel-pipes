@@ -2,13 +2,24 @@
 
 namespace Mshule\LaravelPipes;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
-use Mshule\LaravelPipes\Matching\UriValidator;
+use Mshule\LaravelPipes\Matching\CueValidator;
+use Mshule\LaravelPipes\Matching\KeyValidator;
+use Mshule\LaravelPipes\Matching\PatternValidator;
+use Mshule\LaravelPipes\Exceptions\NoKeysSpecifiedException;
 
 class Pipe extends Route
 {
+    /**
+     * The key the pipe respond to.
+     *
+     * @var string
+     */
+    public $key;
+
     /**
      * The cue pattern the pipe responds to.
      *
@@ -17,11 +28,11 @@ class Pipe extends Route
     public $cue;
 
     /**
-     * The inputs the pipe respond to.
+     * The alias cues a pipe responds to.
      *
      * @var array
      */
-    public $inputs;
+    public $alias = [];
 
     /**
      * The piper instance used by the pipe.
@@ -42,15 +53,15 @@ class Pipe extends Route
      *
      * @param string         $cue
      * @param \Closure|array $action
-     * @param array|string   $inputs
+     * @param string         $key
      */
-    public function __construct($cue, $action, $inputs = [])
+    public function __construct($cue, $action, $key = '')
     {
         parent::__construct(['GET'], $cue, $action);
 
         $this->cue = $cue;
-        $this->inputs = (array) $inputs;
-        $this->prefix($inputs);
+        $this->key = $key;
+        $this->alias = Arr::get($this->action, 'alias', []);
     }
 
     /**
@@ -92,19 +103,34 @@ class Pipe extends Route
     }
 
     /**
-     * Get the inputs the pipe responds to.
+     * Get the key the pipe responds to.
      *
      * @return array
      */
-    public function inputs()
+    public function key()
     {
-        return $this->inputs;
+        if ('placeholder' === $this->key) {
+            $this->key = null;
+        }
+
+        if ($this->key) {
+            return $this->key;
+        }
+
+        $key = $this->key ?? Arr::get($this->action, 'key', null);
+
+        if (! $key) {
+            throw new NoKeysSpecifiedException("No key were defined for {$this->pipe->cue()}");
+        }
+
+        return $this->key = $key;
     }
 
     /**
      * Bind the pipe to a given request for execution.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
+     *
      * @return $this
      */
     public function bind(Request $request)
@@ -134,7 +160,7 @@ class Pipe extends Route
         // validator implementations. We will spin through each one making sure it
         // passes and then we will know if the pipe as a whole matches request.
         return static::$validators = [
-            new UriValidator
+            new KeyValidator(), new CueValidator(), new PatternValidator(),
         ];
     }
 
@@ -142,7 +168,6 @@ class Pipe extends Route
      * Get the full path for the pipe with the replaced attributes from the request.
      *
      * @param Request $request
-     * @return void
      */
     public function path(Request $request)
     {
@@ -151,6 +176,62 @@ class Pipe extends Route
         })->toArray();
 
         $path = preg_replace_array('/\\{[a-zA-Z]+\\}/', $replacements, $this->uri());
+
         return Str::startsWith($path, '/') ? $path : '/' . $path;
+    }
+
+    /**
+     * Set a regular expression requirement on the route.
+     *
+     * @param array|string $name
+     *
+     * @return $this
+     */
+    public function alias($name)
+    {
+        foreach ($this->parseAlias($name) as $name) {
+            $this->alias[] = $name;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Parse arguments to the alias method into an array.
+     *
+     * @param array|string $name
+     * @param string       $expression
+     *
+     * @return array
+     */
+    protected function parseAlias($name)
+    {
+        return is_array($name) ? $name : [$name];
+    }
+
+    /**
+     * Checks if a pipe does have alias specified.
+     *
+     * @param string|null $key
+     *
+     * @return bool
+     */
+    public function hasAlias($key = null)
+    {
+        if (is_null($key)) {
+            return (bool) count($this->getAlias());
+        }
+
+        return in_array($key, $this->getAlias());
+    }
+
+    /**
+     * Get all alias of a pipe.
+     *
+     * @return array
+     */
+    public function getAlias()
+    {
+        return $this->alias;
     }
 }

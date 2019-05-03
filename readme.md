@@ -67,6 +67,15 @@ If you want to handle multiple requests with different attribute keys you can us
 Pipe::any('{bar}', 'SomeController@index');
 ```
 
+**Other Options**
+
+// todo
+
+- `alias()`
+- `namespace()`
+- `key()`
+- `where()`
+
 **Understanding Pipe Life Cycle**
 
 The laravel-pipes lifecycle starts with a `post` request which is send to the `pipes.incoming_request_path`. The `ExecutePipeRequest` Job is dispatched and a http response returned - this is important, since the pipe request is handled asynchronously if you have another queue driver than `sync`. In the Job the `$request` is passed to the Pipe-Kernel's `handle()` method where it is passed through the global pipe-middlewares. The request is matched with the registered pipes and if a match is found the response is returned, otherwise a `NotFoundPipeException` is thrown.

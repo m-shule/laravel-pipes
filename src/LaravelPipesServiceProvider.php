@@ -12,6 +12,18 @@ class LaravelPipesServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->performBindings();
+
+        $this->publishes([
+            __DIR__ . '/../config/pipes.php' => config_path('pipes.php'),
+        ]);
+    }
+
+    /**
+     * Perform all needed bindings.
+     */
+    protected function performBindings()
+    {
         $this->app->singleton('piper', function ($app) {
             return new Piper($app);
         });
@@ -22,9 +34,9 @@ class LaravelPipesServiceProvider extends ServiceProvider
 
         $this->app->alias('piper', \Mshule\LaravelPipes\Piper::class);
 
-        $this->publishes([
-            __DIR__ . '/../config/pipes.php' => config_path('pipes.php'),
-        ]);
+        $this->app->bind('pipe_any', function () {
+            return '*';
+        });
     }
 
     /**
@@ -42,8 +54,6 @@ class LaravelPipesServiceProvider extends ServiceProvider
 
     /**
      * Load all routes for using pipes.
-     *
-     * @return void
      */
     protected function loadRoutes()
     {
@@ -58,8 +68,6 @@ class LaravelPipesServiceProvider extends ServiceProvider
      * Define the "pipe" routes for the application.
      *
      * These routes are typically stateless.
-     *
-     * @return void
      */
     protected function mapPipeRoutes()
     {
