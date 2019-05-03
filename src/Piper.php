@@ -2,6 +2,7 @@
 
 namespace Mshule\LaravelPipes;
 
+use Closure;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
@@ -16,6 +17,13 @@ class Piper extends Router implements RegistrarContract
      * @var \Mshule\LaravelPipes\PipeCollection
      */
     protected $pipes;
+
+    /**
+     * The response resolver callback.
+     *
+     * @var \Closure
+     */
+    protected $responseResolver;
 
     /**
      * Create a new Piper instance.
@@ -57,7 +65,6 @@ class Piper extends Router implements RegistrarContract
      * @param string                         $inputs
      * @param string                         $cue
      * @param \Closure|array|string|callable $action
-     *
      * @return \Mshule\LaravelPipes\Pipe
      */
     public function match($inputs, $cue, $action = [])
@@ -77,7 +84,6 @@ class Piper extends Router implements RegistrarContract
      * Merge the given array with the last group stack.
      *
      * @param array $new
-     *
      * @return array
      */
     public function mergeWithLastGroup($new)
@@ -91,12 +97,10 @@ class Piper extends Router implements RegistrarContract
      * @param string                         $inputs
      * @param string                         $cue
      * @param \Closure|array|string|callable $action
-     *
      * @return \Mshule\LaravelPipes\Pipe
      */
     public function addPipe($inputs, $cue, $action = [])
     {
-        // dd(func_get_args());
         return $this->pipes->add($this->createPipe($inputs, $cue, $action));
     }
 
@@ -119,7 +123,6 @@ class Piper extends Router implements RegistrarContract
      * @param string $inputs
      * @param string $cue
      * @param mixed  $action
-     *
      * @return \Mshule\LaravelPipes\Pipe
      */
     protected function createPipe($inputs, $cue, $action = [])
@@ -172,7 +175,6 @@ class Piper extends Router implements RegistrarContract
      * @param string       $cue
      * @param mixed        $action
      * @param array|string $inputs
-     *
      * @return \Mshule\LaravelPipes\Pipe
      */
     protected function newPipe($cue, $action, $inputs = [])
@@ -186,7 +188,6 @@ class Piper extends Router implements RegistrarContract
      * Dispatch the request to a pipe and return the response.
      *
      * @param \Illuminate\Http\Request $request
-     *
      * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      */
     public function dispatchToRoute(Request $request)
@@ -212,7 +213,6 @@ class Piper extends Router implements RegistrarContract
      *
      * @param \Illuminate\Http\Request  $request
      * @param \Mshule\LaravelPipes\Pipe $pipe
-     *
      * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      */
     protected function runPipe(Request $request, Pipe $pipe)
@@ -225,6 +225,39 @@ class Piper extends Router implements RegistrarContract
             $request,
             $this->runRouteWithinStack($pipe, $request)
         );
+    }
+
+    /**
+     * Get the response resolver callback.
+     * @return \Closure
+     */
+    public function getResponseResolver()
+    {
+        return $this->responseResolver ?: function ($request) {
+            return response('ok');
+        };
+    }
+
+    /**
+     * Set the response resolver callback.
+     *
+     * @param  \Closure  $callback
+     * @return $this
+     */
+    public function setResponseResolver(Closure $callback)
+    {
+        $this->responseResolver = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Return standard response.
+     * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
+     */
+    public function response($request)
+    {
+        return call_user_func($this->getResponseResolver(), $request);
     }
 
     /**
@@ -243,7 +276,6 @@ class Piper extends Router implements RegistrarContract
      *
      * @param string $method
      * @param array  $parameters
-     *
      * @return mixed
      */
     public function __call($method, $parameters)

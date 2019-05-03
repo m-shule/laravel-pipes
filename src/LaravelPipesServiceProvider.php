@@ -21,7 +21,6 @@ class LaravelPipesServiceProvider extends ServiceProvider
         });
 
         $this->app->alias('piper', \Mshule\LaravelPipes\Piper::class);
-        $this->app->alias('piper', \Mshule\LaravelPipes\Contracts\Registrar::class);
 
         $this->publishes([
             __DIR__ . '/../config/pipes.php' => config_path('pipes.php'),

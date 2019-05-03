@@ -21,7 +21,7 @@ class Request extends HttpRequest
      */
     public function getPipeResolver()
     {
-        return $this->PipeResolver ?: function () {
+        return $this->pipeResolver ?: function () {
             //
         };
     }
@@ -34,7 +34,7 @@ class Request extends HttpRequest
      */
     public function setPipeResolver(Closure $callback)
     {
-        $this->PipeResolver = $callback;
+        $this->pipeResolver = $callback;
 
         return $this;
     }
