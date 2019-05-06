@@ -35,7 +35,7 @@ class LaravelPipesServiceProvider extends ServiceProvider
         $this->app->alias('piper', \Mshule\LaravelPipes\Piper::class);
 
         $this->app->bind('pipe_any', function () {
-            return '*';
+            return '*any*';
         });
     }
 

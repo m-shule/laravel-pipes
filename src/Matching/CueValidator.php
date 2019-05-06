@@ -25,12 +25,21 @@ class CueValidator implements ValidatorInterface
             return true;
         }
 
-        $values = array_values($request->input());
+        $any = resolve('pipe_any');
+        $keys = $pipe->key() === $any ? $request->all() : $request->only($pipe->key());
+        $values = array_map('strtolower', array_values($keys));
 
-        array_push($values, resolve('pipe_any'));
+        array_push($values, $any);
 
         $matched = collect($values)->contains(function ($value) use ($pipe) {
-            return Str::startsWith($pipe->cue(), $value);
+            // to be able to match starting strings with $cue and including a
+            // param `trigger {param}` inside the cue we will figure out
+            // which string is longer and use this for our truth test.
+            list($haystack, $needle) = strlen($value) >= strlen($pipe->cue())
+                ? [$value, $pipe->cue()]
+                : [$pipe->cue(), $value];
+
+            return Str::startsWith($haystack, $needle);
         });
 
         if ($matched || ! $pipe->hasAlias()) {
