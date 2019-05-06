@@ -59,8 +59,8 @@ class Pipe extends Route
     {
         parent::__construct(['GET'], $cue, $action);
 
-        $this->cue = $cue;
-        $this->key = $key;
+        $this->cue = strtolower($cue);
+        $this->key = strtolower($key);
         $this->alias = Arr::get($this->action, 'alias', []);
     }
 
@@ -123,7 +123,7 @@ class Pipe extends Route
             throw new NoKeysSpecifiedException("No key were defined for {$this->pipe->cue()}");
         }
 
-        return $this->key = $key;
+        return $this->key = strtolower($key);
     }
 
     /**
@@ -190,7 +190,7 @@ class Pipe extends Route
     public function alias($name)
     {
         foreach ($this->parseAlias($name) as $name) {
-            $this->alias[] = $name;
+            $this->alias[] = strtolower($name);
         }
 
         return $this;

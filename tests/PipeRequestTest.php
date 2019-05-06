@@ -79,6 +79,23 @@ class PipeRequestTest extends TestCase
     }
 
     /** @test */
+    public function it_matches_everything_to_lowercase()
+    {
+        Pipe::fake();
+
+        Pipe::match('text', 'test', function () {
+            return response('pipe was resolved', 200);
+        });
+
+        $this->pipe(['text' => 'TEST']);
+
+        Pipe::assertResponded(function ($response) {
+            $response->assertOk()
+                ->assertSee('pipe was resolved');
+        });
+    }
+
+    /** @test */
     public function it_can_resolve_pipes_to_controller_actions()
     {
         Pipe::fake();

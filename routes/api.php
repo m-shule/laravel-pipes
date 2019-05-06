@@ -7,8 +7,8 @@ use Mshule\LaravelPipes\Jobs\ExecutePipeRequest;
 Route::post(config('pipes.incoming_request_path'), function (Request $request) {
     ExecutePipeRequest::dispatch(
         $request->query(),
-        $request->post(),
-        $request->input(),
+        array_map('strtolower', $request->post()),
+        array_map('strtolower', $request->input()),
         $request->cookie(),
         $request->file(),
         $request->server(),
