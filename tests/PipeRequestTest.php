@@ -324,4 +324,23 @@ class PipeRequestTest extends TestCase
                     ->assertSee('pong');
         });
     }
+
+    /** @test */
+    public function it_ignores_global_helper_functions_as_cue()
+    {
+        Pipe::fake();
+
+        Pipe::key('text')->group(function () {
+            Pipe::match('report', function () {
+                return 'it ignored report()';
+            });
+        });
+
+        $this->pipe(['text' => 'report']);
+
+        Pipe::assertResponded(function ($response) {
+            $response->assertOk()
+                    ->assertSee('it ignored report()');
+        });
+    }
 }

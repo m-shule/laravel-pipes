@@ -149,7 +149,7 @@ class Piper extends Router implements RegistrarContract
 
         // if the input was passed through the fluent api the
         // order of the func argument have to be rearranged.
-        if (is_callable($cue) || Str::contains($cue, '@')) {
+        if (($cue instanceof Closure && is_callable($cue)) || Str::contains($cue, '@')) {
             list($key, $cue, $action) = [$action, $key, $cue];
         }
 
