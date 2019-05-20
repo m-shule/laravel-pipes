@@ -21,7 +21,7 @@ The incoming web request will be handled by `your_app_domain` + whatever you put
 
 To get an overview of all functionalities this package offers, you can check the `tests/PipeRequestTest.php`.
 
-**Handling Pipes**
+### Handling Pipes
 
 Pipes are matched by the keys and values of the request's data attributes.
 
@@ -67,14 +67,67 @@ If you want to handle multiple requests with different attribute keys you can us
 Pipe::any('{bar}', 'SomeController@index');
 ```
 
-**Other Options**
+### Other Options
 
-// todo
+**alias()**
+Sometimes user might have a typo in their message or you simply want to have different cues available to trigger a Pipe.
 
-- `alias()`
-- `namespace()`
-- `key()`
-- `where()`
+```php
+Pipe::any('bar', 'FooBarController')
+  ->alias(['ba', 'b-r', 'bas']);
+```
+
+The `FooBarController` will now be called upon `ba`, `b-r`, `bas` or as originally intended on `bar`.
+
+**namespace()**
+As you have probably noted the `routes/pipes.php` file is bound to a namespace configurable in the `config/pipes.php`. If you want to define a group with a different namespace, you can use the `namespace()` method:
+
+```php
+Pipe::middleware('pipe')
+  ->namespace(config('pipes.namespace'))
+  ->group(function () {
+    // define your namespaced pipes here
+  });
+```
+
+**key()**
+Like demonstrated in the first section of the *Handling Pipes* documentation, you can define Pipe routes in man different ways.
+
+```php
+Pipe::match('foo', 'bar', function () {});
+
+// same as
+Pipe::match('foo:bar', function () {});
+```
+
+There is a third option to specify the `key` of a Pipe by using the `key()` method.
+
+```php
+Pipe::key('foo')->match('bar', function () {});
+```
+
+The key method is handy if you have got several pipe routes which reacts to the same key.
+
+```php
+Pipe::key('text')
+  ->group(function () {
+    // all pipe definitions within here will check for the `text` as key in the incoming request
+    Pipe::match('some-text', function () {});
+  });
+```
+
+**where()**
+To further specify which request should be send to a specific handler you can define conditions on each pipe, like you are used to with [Laravel routes](https://laravel.com/docs/5.8/routing#parameters-regular-expression-constraints).
+
+```php
+Pipe::any('{foo}', function ($foo) {
+  return $foo;
+})->where('foo', 'bar');
+
+Pipe::any('{foo}', function ($foo) {
+  return $foo;
+})->where('foo', '[a-z]+');
+```
 
 **Understanding Pipe Life Cycle**
 
