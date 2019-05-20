@@ -35,7 +35,7 @@ class CueValidator implements ValidatorInterface
             // to be able to match starting strings with $cue and including a
             // param `trigger {param}` inside the cue we will figure out
             // which string is longer and use this for our truth test.
-            list($haystack, $needle) = strlen($value) >= strlen($pipe->cue())
+            [$haystack, $needle] = strlen($value) >= strlen($pipe->cue())
                 ? [$value, $pipe->cue()]
                 : [$pipe->cue(), $value];
 

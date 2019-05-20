@@ -141,7 +141,7 @@ class Piper extends Router implements RegistrarContract
         // seperated by a colon (:), the values need to
         // be reassigned to the right variable.
         if (is_string($key) && Str::contains($key, ':')) {
-            list($key, $cue, $action) = array_merge(
+            [$key, $cue, $action] = array_merge(
                 explode(':', $key),
                 [array_merge(['uses' => $cue], $action)]
             );
@@ -150,7 +150,7 @@ class Piper extends Router implements RegistrarContract
         // if the input was passed through the fluent api the
         // order of the func argument have to be rearranged.
         if (($cue instanceof Closure && is_callable($cue)) || Str::contains($cue, '@')) {
-            list($key, $cue, $action) = [$action, $key, $cue];
+            [$key, $cue, $action] = [$action, $key, $cue];
         }
 
         // If the pipe is pointing to a controller we will parse the pipe action into
