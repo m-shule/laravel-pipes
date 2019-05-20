@@ -1,7 +1,7 @@
 # laravel-pipes
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
-[![Travis](https://img.shields.io/travis/mshule/laravel-pipes.svg?style=flat-square)]()
+[![Build Status](https://travis-ci.org/m-shule/laravel-pipes.svg?branch=master)](https://travis-ci.org/m-shule/laravel-pipes)
 [![Total Downloads](https://img.shields.io/packagist/dt/mshule/laravel-pipes.svg?style=flat-square)](https://packagist.org/packages/mshule/laravel-pipes)
 
 Handling notifications from API's is simple when they only requrire to handle one type of notification, but if you have to handle multiple requests e.g. from an SMS API it can get messy. Similiar to [Botman](https://botman.io)'s `hear()` method, this package provides a similiar approach and could be used as part of another Botman like implementation. Instead of implementing a different approach as you are used to from the [Laravel Routes](https://laravel.com/docs/5.8/routing), laravel-pipes offers a similiar API.
