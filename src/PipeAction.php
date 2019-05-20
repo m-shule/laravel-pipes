@@ -37,6 +37,6 @@ class PipeAction extends RouteAction
             throw new UnexpectedValueException("Invalid pipe action: [{$action}].");
         }
 
-        return $action . '@__invoke';
+        return $action.'@__invoke';
     }
 }

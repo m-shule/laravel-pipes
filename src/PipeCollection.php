@@ -50,7 +50,7 @@ class PipeCollection implements Countable, IteratorAggregate
         $key = $pipe->key();
 
         $this->pipes[$key][$cue] = $pipe;
-        $this->allPipes[$key . $cue] = $pipe;
+        $this->allPipes[$key.$cue] = $pipe;
     }
 
     /**

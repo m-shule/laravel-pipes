@@ -16,4 +16,7 @@ install:
   - travis_retry composer update ${COMPOSER_OPTIONS} --prefer-source
 
 script:
-  - phpunit
+  - vendor/bin/phpunit
+
+after_success:
+  - codecov

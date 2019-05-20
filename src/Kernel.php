@@ -24,7 +24,7 @@ class Kernel extends HttpKernel
     protected $middlewareGroups = [
         'pipe' => [
             \Mshule\LaravelPipes\Http\Middleware\SubstituteBindings::class,
-        ]
+        ],
     ];
 
     /**
