@@ -17,3 +17,6 @@ install:
 
 script:
   - phpunit
+
+after_success:
+  - codecov
