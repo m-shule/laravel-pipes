@@ -37,7 +37,7 @@ class ExecutePipeRequest implements ShouldQueue
     public function handle()
     {
         $kernel = resolve(Kernel::class);
-        $request = new Request(...$this->data);
+        $request = Request::reconstruct($this->data);
 
         event(new IncomingPipeRequest($request));
 

@@ -1,18 +1,13 @@
 <?php
 
-use Illuminate\Http\Request;
+use Mshule\LaravelPipes\Request;
 use Mshule\LaravelPipes\Facades\Pipe;
+use Illuminate\Http\Request as HttpRequest;
 use Mshule\LaravelPipes\Jobs\ExecutePipeRequest;
 
-Route::post(config('pipes.incoming_request_path'), function (Request $request) {
+Route::post(config('pipes.incoming_request_path'), function (HttpRequest $request) {
     ExecutePipeRequest::dispatch(
-        $request->query(),
-        $request->post(),
-        $request->input(),
-        $request->cookie(),
-        $request->file(),
-        $request->server(),
-        $request->getContent()
+        ...Request::destruct($request)
     );
 
     return Pipe::response($request);
