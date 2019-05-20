@@ -41,9 +41,11 @@ class Request extends HttpRequest
      *
      * @return self
      */
-    public static function reconstruct($data)
+    public static function reconstruct($data, $request = Request::class)
     {
-        return new self(...$data);
+        return tap(resolve($request), function ($request) use ($data) {
+            $request->initialize(...$data);
+        });
     }
 
     /**
