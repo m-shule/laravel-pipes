@@ -15,7 +15,7 @@ class LaravelPipesServiceProvider extends ServiceProvider
         $this->performBindings();
 
         $this->publishes([
-            __DIR__ . '/../config/pipes.php' => config_path('pipes.php'),
+            __DIR__.'/../config/pipes.php' => config_path('pipes.php'),
         ]);
     }
 
@@ -45,7 +45,7 @@ class LaravelPipesServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/pipes.php',
+            __DIR__.'/../config/pipes.php',
             'pipes'
         );
 
@@ -57,7 +57,7 @@ class LaravelPipesServiceProvider extends ServiceProvider
      */
     protected function loadRoutes()
     {
-        $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+        $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
 
         if (config('pipes.load_routes_file')) {
             $this->mapPipeRoutes();

@@ -177,7 +177,7 @@ class Pipe extends Route
 
         $path = preg_replace_array('/\\{[a-zA-Z]+\\}/', $replacements, $this->uri());
 
-        return Str::startsWith($path, '/') ? $path : '/' . $path;
+        return Str::startsWith($path, '/') ? $path : '/'.$path;
     }
 
     /**

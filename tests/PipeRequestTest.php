@@ -315,7 +315,7 @@ class PipeRequestTest extends TestCase
     {
         Pipe::fake();
 
-        Pipe::namespace('Test')->group(__DIR__ . '/Fixtures/pipes.php');
+        Pipe::namespace('Test')->group(__DIR__.'/Fixtures/pipes.php');
 
         $this->pipe(['test' => 'ping']);
 
