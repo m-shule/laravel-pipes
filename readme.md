@@ -5,13 +5,13 @@
 [![codecov](https://codecov.io/gh/m-shule/laravel-pipes/branch/master/graph/badge.svg)](https://codecov.io/gh/m-shule/laravel-pipes)
 [![Total Downloads](https://img.shields.io/packagist/dt/mshule/laravel-pipes.svg?style=flat-square)](https://packagist.org/packages/mshule/laravel-pipes)
 
-Handling notifications from API's is simple when they only requrire to handle one type of notification, but if you have to handle multiple requests e.g. from an SMS API it can get messy. Similiar to [Botman](https://botman.io)'s `hear()` method, this package provides a similiar approach and could be used as part of another Botman like implementation. Instead of implementing a different approach as you are used to from the [Laravel Routes](https://laravel.com/docs/5.8/routing), laravel-pipes offers a similiar API.
+Handling notifications from API's is simple when they only require to handle one type of notification, but if you have to handle multiple requests e.g. from an SMS API it can get messy. Similar to [Botman](https://botman.io)'s hear() method, this package provides a slightly different approach which could be used as part of another Botman like implementation. This package offers a similar API as you are used to from the [Laravel Routes](https://laravel.com/docs/5.8/routing).
 
 ## Install
 
 `composer require mshule/laravel-pipes`
 
-The incoming web request will be handled by `your_app_domain` + whatever you put in the `pipes.incoming_request_path` config. By default the path will result into `your_app_domain/handle-notification`.
+The incoming web request will be handled by `your_app_domain` + whatever you put in the `pipes.incoming_request_path` config. By default, the path will result in `your_app_domain/handle-notification`.
 
 **Optional: Create a separate route file for your pipes.**
 
@@ -42,7 +42,7 @@ $this->pipe(['foo' => 'bar'])
   ->assertSee('matched'); // true
 ```
 
-Attributes can be bound danymically to the pipe-request.
+Attributes can be bound dynamically to the pipe-request.
 
 ```php
 Pipe::match('foo:{bar}', function ($bar) {
@@ -71,7 +71,7 @@ Pipe::any('{bar}', 'SomeController@index');
 ### Other Options
 
 **alias()**
-Sometimes user might have a typo in their message or you simply want to have different cues available to trigger a Pipe.
+Sometimes the user might have a typo in their message or you simply want to have different cues available to trigger a Pipe.
 
 ```php
 Pipe::any('bar', 'FooBarController')
@@ -107,7 +107,7 @@ There is a third option to specify the `key` of a Pipe by using the `key()` meth
 Pipe::key('foo')->match('bar', function () {});
 ```
 
-The key method is handy if you have got several pipe routes which reacts to the same key.
+The key method is handy if you have got several pipe routes which react to the same key.
 
 ```php
 Pipe::key('text')
@@ -118,7 +118,7 @@ Pipe::key('text')
 ```
 
 **where()**
-To further specify which request should be send to a specific handler you can define conditions on each pipe, like you are used to with [Laravel routes](https://laravel.com/docs/5.8/routing#parameters-regular-expression-constraints).
+To further specify which request should be sent to a specific handler you can define conditions on each pipe like you are used to with [Laravel routes](https://laravel.com/docs/5.8/routing#parameters-regular-expression-constraints).
 
 ```php
 Pipe::any('{foo}', function ($foo) {
@@ -132,13 +132,13 @@ Pipe::any('{foo}', function ($foo) {
 
 **Understanding Pipe Life Cycle**
 
-The laravel-pipes lifecycle starts with a `post` request which is send to the `pipes.incoming_request_path`. The `ExecutePipeRequest` Job is dispatched and a http response returned - this is important, since the pipe request is handled asynchronously if you have another queue driver than `sync`. In the Job the `$request` is passed to the Pipe-Kernel's `handle()` method where it is passed through the global pipe-middlewares. The request is matched with the registered pipes and if a match is found the response is returned, otherwise a `NotFoundPipeException` is thrown.
+The laravel-pipes lifecycle starts with a `post` request which is sent to the `pipes.incoming_request_path`. The `ExecutePipeRequest` Job is dispatched and an HTTP response returned - this is important since the pipe request is handled asynchronously if you have another queue driver than `sync`. In the Job, the `$request` is passed to the Pipe-Kernel's `handle()` method where it is passed through the global pipe-middlewares. The request is matched with the registered pipes and if a match is found the response is returned, otherwise a `NotFoundPipeException` is thrown.
 
 **Testing Pipes**
 
 This package provides a simple trait to perform pipe requests. The `MakesPipeRequests` Trait provides a `pipe()` method to perform a pipe-request. The method fires a `post` request to the specified endpoint in `pipes.incoming_request_path`, but it is much easier to write `$this->pipe(...)` than `$this->post(config('pipes.incoming_request_path), [...])`.
 
-Since the pipe request is executed trough a job, you have to use the `Pipe::fake()` method to get access to your responses.
+Since the pipe request is executed through a job, you have to use the `Pipe::fake()` method to get access to your responses.
 
 ```php
 Pipe::fake();
