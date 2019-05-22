@@ -21,7 +21,7 @@ class CueValidator implements ValidatorInterface
         // if cue has no static params we have to let the request
         // pass and trust in the PatternValidator to detect
         // mistakes with the parameters.
-        if (Str::startsWith($pipe->cue(), '{')) {
+        if ($pipe->cueStartsWithPlaceholder()) {
             return true;
         }
 

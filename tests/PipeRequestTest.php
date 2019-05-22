@@ -2,10 +2,12 @@
 
 namespace Mshule\LaravelPipes\Tests;
 
+use Illuminate\Support\Facades\Event;
 use Mshule\LaravelPipes\Facades\Pipe;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mshule\LaravelPipes\Testing\MakesPipeRequests;
 use Mshule\LaravelPipes\Tests\Fixtures\Models\Todo;
+use Mshule\LaravelPipes\Events\IncomingPipeResponse;
 use Mshule\LaravelPipes\Exceptions\NotFoundPipeException;
 
 class PipeRequestTest extends TestCase
@@ -191,6 +193,7 @@ class PipeRequestTest extends TestCase
     /** @test */
     public function it_can_match_dynamic_parameters()
     {
+        $this->withoutExceptionHandling();
         Pipe::fake();
 
         Pipe::match('trigger:name {text}', function ($text) {
@@ -202,6 +205,32 @@ class PipeRequestTest extends TestCase
         Pipe::assertResponded(function ($response) {
             $response->assertOk()
                 ->assertSee('you said something');
+        });
+    }
+
+    /** @test */
+    public function its_dynamic_pattern_match_checks_first_for_placeholder_name_in_request_then_for_default_cue_value()
+    {
+        Pipe::fake();
+
+        Pipe::match('trigger:{text}', function ($text) {
+            return "you said {$text}";
+        });
+
+        $this->pipe(['trigger' => 'something']);
+
+        Pipe::assertResponded(function ($response) {
+            $response->assertOk()
+                ->assertSee('you said something');
+        });
+
+        Event::listen(IncomingPipeResponse::class, function () {
+            $this->pipe(['trigger' => 'something', 'text' => 'another']);
+
+            Pipe::assertResponded(function ($response) {
+                $response->assertOk()
+                    ->assertSee('you said another');
+            });
         });
     }
 
@@ -315,7 +344,7 @@ class PipeRequestTest extends TestCase
     {
         Pipe::fake();
 
-        Pipe::namespace('Test')->group(__DIR__.'/Fixtures/pipes.php');
+        Pipe::namespace('Test')->group(__DIR__ . '/Fixtures/pipes.php');
 
         $this->pipe(['test' => 'ping']);
 
