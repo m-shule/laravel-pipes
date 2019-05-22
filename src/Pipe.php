@@ -172,7 +172,7 @@ class Pipe extends Route
     public function path(Request $request)
     {
         $replacements = collect($this->parameterNames())->map(function ($param) use ($request) {
-            return $request->{$param};
+            return $request->{$this->paramKey($param)};
         })->toArray();
 
         $path = preg_replace_array('/\\{[a-zA-Z]+\\}/', $replacements, $this->uri());
@@ -233,5 +233,41 @@ class Pipe extends Route
     public function getAlias()
     {
         return $this->alias;
+    }
+
+    /**
+     * Checks if cue of this pipe starts with a placeholder.
+     *
+     * @return bool
+     */
+    public function cueStartsWithPlaceholder()
+    {
+        return Str::startsWith($this->cue(), '{');
+    }
+
+    /**
+     * Checks if cue only contains one placeholder.
+     *
+     * @return bool
+     */
+    public function cueIsPlaceholder()
+    {
+        return preg_match('/^\\{[A-Za-z]+\\}$/', $this->cue());
+    }
+
+    /**
+     * Get param key for the path matching of a pipe.
+     *
+     * @return string
+     */
+    public function paramKey($param)
+    {
+        if ($this->key() === resolve('pipe_any')) {
+            return $param;
+        }
+
+        return $this->cueIsPlaceholder()
+                ? $this->key()
+                : $param ?? $this->key();
     }
 }
