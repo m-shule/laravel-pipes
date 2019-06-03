@@ -1,11 +1,12 @@
 # Change Log
 
-## [Unreleased](https://github.com/m-shule/laravel-pipes/tree/HEAD)
-
-[Full Changelog](https://github.com/m-shule/laravel-pipes/compare/v1.0...HEAD)
+## [v1.0.1](https://github.com/m-shule/laravel-pipes/tree/v1.0.1) (2019-05-22)
+[Full Changelog](https://github.com/m-shule/laravel-pipes/compare/v1.0...v1.0.1)
 
 **Merged pull requests:**
 
+- Fix Param matching [\#3](https://github.com/m-shule/laravel-pipes/pull/3) ([Naoray](https://github.com/Naoray))
+- Apply fixes from StyleCI [\#2](https://github.com/m-shule/laravel-pipes/pull/2) ([Naoray](https://github.com/Naoray))
 - Apply fixes from StyleCI [\#1](https://github.com/m-shule/laravel-pipes/pull/1) ([Naoray](https://github.com/Naoray))
 
 ## [v1.0](https://github.com/m-shule/laravel-pipes/tree/v1.0) (2019-05-20)
