@@ -3,6 +3,7 @@
 namespace Mshule\LaravelPipes;
 
 use Illuminate\Routing\Pipeline;
+use Illuminate\Support\Facades\Facade;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Mshule\LaravelPipes\Exceptions\NotFoundPipeException;
@@ -64,6 +65,7 @@ class Kernel extends HttpKernel
      * Handle an incoming HTTP request.
      *
      * @param \Mshule\LaravelPipes\Request $request
+     *
      * @return \Illuminate\Http\Response
      */
     public function handle($request)
@@ -81,10 +83,15 @@ class Kernel extends HttpKernel
      * Send the given request through the middleware / pipes.
      *
      * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Response
      */
     protected function sendRequestThroughPipes($request)
     {
+        $this->app->instance('request', $request);
+
+        Facade::clearResolvedInstance('request');
+
         $this->bootstrap();
 
         return (new Pipeline($this->app))
@@ -101,6 +108,8 @@ class Kernel extends HttpKernel
     protected function dispatchToPiper()
     {
         return function ($request) {
+            $this->app->instance('request', $request);
+
             return $this->piper->dispatch($request);
         };
     }
@@ -109,6 +118,7 @@ class Kernel extends HttpKernel
      * Gather the pipe middleware for the given request.
      *
      * @param \Illuminate\Http\Request $request
+     *
      * @return array
      */
     protected function gatherRouteMiddleware($request)
