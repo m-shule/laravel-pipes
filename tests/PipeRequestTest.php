@@ -270,6 +270,22 @@ class PipeRequestTest extends TestCase
     }
 
     /** @test */
+    public function it_doesnt_match_dynamic_parameters_if_the_request_contains_only_parts_of_the_cue()
+    {
+        Pipe::fake();
+
+        Pipe::any('name {text}', function ($text) {
+            return "you said {$text}";
+        });
+
+        $this->pipe(['bla' => 'nam', 'text' => 'something']);
+
+        Pipe::assertResponded(function ($response) {
+            $response->assertNotFound();
+        });
+    }
+
+    /** @test */
     public function it_can_add_conditions_to_pipe_definitions()
     {
         Pipe::fake();
@@ -370,6 +386,24 @@ class PipeRequestTest extends TestCase
         Pipe::assertResponded(function ($response) {
             $response->assertOk()
                     ->assertSee('it ignored report()');
+        });
+    }
+
+    /** @test */
+    public function it_does_not_match_one_character_to_a_pipe_if_it_is_no_dynamic_param()
+    {
+        Pipe::fake();
+
+        Pipe::key('text')->group(function () {
+            Pipe::match('config', function () {
+                return 'config pipe triggered';
+            });
+        });
+
+        $this->pipe(['text' => 'c']);
+
+        Pipe::assertResponded(function ($response) {
+            $response->assertNotFound();
         });
     }
 }

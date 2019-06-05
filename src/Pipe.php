@@ -246,6 +246,16 @@ class Pipe extends Route
     }
 
     /**
+     * Checks if the pipes cue contains placeholders.
+     *
+     * @return bool
+     */
+    public function cueContainsPlaceholder()
+    {
+        return Str::contains($this->cue(), ['{', '}']);
+    }
+
+    /**
      * Checks if cue only contains one placeholder.
      *
      * @return bool

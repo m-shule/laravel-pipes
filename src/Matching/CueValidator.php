@@ -32,6 +32,14 @@ class CueValidator implements ValidatorInterface
         array_push($values, $any);
 
         $matched = collect($values)->contains(function ($value) use ($pipe) {
+            if (! $pipe->cueContainsPlaceholder()) {
+                return $pipe->cue() === $value;
+            }
+
+            if (! $pipe->cueStartsWithPlaceholder()) {
+                return $value === trim(Str::before($pipe->cue(), '{'));
+            }
+
             // to be able to match starting strings with $cue and including a
             // param `trigger {param}` inside the cue we will figure out
             // which string is longer and use this for our truth test.
