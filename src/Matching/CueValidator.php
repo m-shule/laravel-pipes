@@ -33,11 +33,11 @@ class CueValidator implements ValidatorInterface
 
         $matched = collect($values)->contains(function ($value) use ($pipe) {
             if (! $pipe->cueContainsPlaceholder()) {
-                return $pipe->cue() === $value;
+                return Str::startsWith($value, $pipe->cue());
             }
 
             if (! $pipe->cueStartsWithPlaceholder()) {
-                return $value === trim(Str::before($pipe->cue(), '{'));
+                return Str::startsWith($value, trim(Str::before($pipe->cue(), '{')));
             }
 
             // to be able to match starting strings with $cue and including a
