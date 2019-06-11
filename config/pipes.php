@@ -40,4 +40,16 @@ return [
     */
 
     'incoming_request_path' => 'handle-notification',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Queue
+    |--------------------------------------------------------------------------
+    |
+    | Sets the queue on which the job is run which boots the
+    | akernel and starts the whole laravel-pipe lifecycle
+    |
+    */
+
+    'queue' => env('PIPE_QUEUE', 'default'),
 ];

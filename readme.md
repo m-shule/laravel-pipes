@@ -133,6 +133,10 @@ Pipe::any('{foo}', function ($foo) {
 
 The laravel-pipes lifecycle starts with a `post` request which is send to the `pipes.incoming_request_path`. The `ExecutePipeRequest` Job is dispatched and a http response returned - this is important, since the pipe request is handled asynchronously if you have another queue driver than `sync`. In the Job the `$request` is passed to the Pipe-Kernel's `handle()` method where it is passed through the global pipe-middlewares. The request is matched with the registered pipes and if a match is found the response is returned, otherwise a `NotFoundPipeException` is thrown.
 
+**Define the queue**
+
+As explained in the section above, a job is triggered to start the pipe-lifecycle. With the `pipes.queue` option you can define a seperate queue to run the pipe job on.
+
 **Testing Pipes**
 
 This package provides a simple trait to perform pipe requests. The `MakesPipeRequests` Trait provides a `pipe()` method to perform a pipe-request. The method fires a `post` request to the specified endpoint in `pipes.incoming_request_path`, but it is much easier to write `$this->pipe(...)` than `$this->post(config('pipes.incoming_request_path), [...])`.
