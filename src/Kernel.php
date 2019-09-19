@@ -2,11 +2,14 @@
 
 namespace Mshule\LaravelPipes;
 
+use Exception;
+use Throwable;
 use Illuminate\Routing\Pipeline;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Mshule\LaravelPipes\Exceptions\NotFoundPipeException;
+use Symfony\Component\Debug\Exception\FatalThrowableError;
 
 class Kernel extends HttpKernel
 {
@@ -74,6 +77,14 @@ class Kernel extends HttpKernel
             $response = $this->sendRequestThroughPipes($request);
         } catch (NotFoundPipeException $e) {
             throw new NotFoundPipeException($request);
+        } catch (Exception $e) {
+            $this->reportException($e);
+
+            $response = $this->renderException($request, $e);
+        } catch (Throwable $e) {
+            $this->reportException($e = new FatalThrowableError($e));
+
+            $response = $this->renderException($request, $e);
         }
 
         return Response::from($response);
