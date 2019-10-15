@@ -4,15 +4,13 @@ namespace Mshule\LaravelPipes\Tests;
 
 use Illuminate\Support\Facades\Event;
 use Mshule\LaravelPipes\Facades\Pipe;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mshule\LaravelPipes\Testing\MakesPipeRequests;
-use Mshule\LaravelPipes\Tests\Fixtures\Models\Todo;
 use Mshule\LaravelPipes\Events\IncomingPipeResponse;
 use Mshule\LaravelPipes\Exceptions\NotFoundPipeException;
 
 class PipeRequestTest extends TestCase
 {
-    use RefreshDatabase, MakesPipeRequests;
+    use MakesPipeRequests;
 
     /** @test */
     public function a_not_found_pipe_exception_is_thrown_if_no_controller_was_found()
@@ -320,6 +318,23 @@ class PipeRequestTest extends TestCase
     }
 
     /** @test */
+    public function it_can_identify_aliases_of_pipes_even_when_the_request_does_only_start_with_the_alias()
+    {
+        Pipe::fake();
+
+        Pipe::any('mshule', function () {
+            return 'matched';
+        })->alias(['mhule', 'mule']);
+
+        $this->pipe(['foo' => 'mule1']);
+
+        Pipe::assertResponded(function ($response) {
+            $response->assertOk()
+                ->assertSee('matched');
+        });
+    }
+
+    /** @test */
     public function it_can_add_aliases_predefined_to_pipes()
     {
         Pipe::fake();
@@ -337,30 +352,11 @@ class PipeRequestTest extends TestCase
     }
 
     /** @test */
-    public function it_can_bind_models_to_pipe_requests()
-    {
-        Pipe::fake();
-
-        $todo = Todo::create(['name' => 'Foo Bar']);
-
-        Pipe::middleware('pipe')->any('{todo}', function (Todo $todo) {
-            return "You fetched {$todo->name} Todo";
-        });
-
-        $this->pipe(['todo' => $todo->id]);
-
-        Pipe::assertResponded(function ($response) {
-            $response->assertOk()
-                ->assertSee('You fetched Foo Bar Todo');
-        });
-    }
-
-    /** @test */
     public function it_can_load_pipes_from_files()
     {
         Pipe::fake();
 
-        Pipe::namespace('Test')->group(__DIR__.'/Fixtures/pipes.php');
+        Pipe::namespace('Test')->group(__DIR__ . '/Fixtures/pipes.php');
 
         $this->pipe(['test' => 'ping']);
 
