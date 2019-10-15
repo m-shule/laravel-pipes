@@ -177,7 +177,7 @@ class Pipe extends Route
 
         $path = preg_replace_array('/\\{[a-zA-Z]+\\}/', $replacements, $this->uri());
 
-        return Str::startsWith($path, '/') ? $path : '/'.$path;
+        return Str::startsWith($path, '/') ? $path : '/' . $path;
     }
 
     /**
@@ -222,7 +222,9 @@ class Pipe extends Route
             return (bool) count($this->getAlias());
         }
 
-        return in_array($key, $this->getAlias());
+        return collect($this->getAlias())->contains(function ($alias) use ($key) {
+            return Str::startsWith($key, $alias);
+        });
     }
 
     /**
