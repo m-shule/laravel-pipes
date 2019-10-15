@@ -15,7 +15,7 @@ class SubstituteBindingsTest extends TestCase
     {
         parent::setUp();
 
-        $this->loadMigrationsFrom(__DIR__ . '/Fixtures/Migrations');
+        $this->loadMigrationsFrom(__DIR__.'/Fixtures/Migrations');
     }
 
     /** @test */
