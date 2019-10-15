@@ -222,7 +222,9 @@ class Pipe extends Route
             return (bool) count($this->getAlias());
         }
 
-        return in_array($key, $this->getAlias());
+        return collect($this->getAlias())->contains(function ($alias) use ($key) {
+            return Str::startsWith($key, $alias);
+        });
     }
 
     /**

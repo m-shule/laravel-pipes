@@ -56,6 +56,8 @@ class CueValidator implements ValidatorInterface
 
         // if a pipe has alias specified we will check whether
         // the alias and request values have a common subset
-        return count(array_intersect($values, $pipe->getAlias())) > 0;
+        return collect($values)->contains(function ($value) use ($pipe) {
+            return $pipe->hasAlias($value);
+        });
     }
 }
