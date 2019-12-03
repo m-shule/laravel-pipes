@@ -2,8 +2,8 @@
 
 namespace Mshule\LaravelPipes\Matching;
 
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Mshule\LaravelPipes\Pipe;
 
 class CueValidator implements ValidatorInterface
