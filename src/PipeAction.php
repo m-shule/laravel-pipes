@@ -2,9 +2,9 @@
 
 namespace Mshule\LaravelPipes;
 
+use Illuminate\Routing\RouteAction;
 use LogicException;
 use UnexpectedValueException;
-use Illuminate\Routing\RouteAction;
 
 class PipeAction extends RouteAction
 {

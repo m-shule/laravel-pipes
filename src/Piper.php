@@ -3,10 +3,10 @@
 namespace Mshule\LaravelPipes;
 
 use Closure;
-use Illuminate\Support\Str;
+use Illuminate\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
-use Illuminate\Container\Container;
+use Illuminate\Support\Str;
 use Mshule\LaravelPipes\Contracts\Registrar as RegistrarContract;
 
 class Piper extends Router implements RegistrarContract

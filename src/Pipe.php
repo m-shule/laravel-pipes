@@ -2,14 +2,14 @@
 
 namespace Mshule\LaravelPipes;
 
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
+use Mshule\LaravelPipes\Exceptions\NoKeysSpecifiedException;
 use Mshule\LaravelPipes\Matching\CueValidator;
 use Mshule\LaravelPipes\Matching\KeyValidator;
 use Mshule\LaravelPipes\Matching\PatternValidator;
-use Mshule\LaravelPipes\Exceptions\NoKeysSpecifiedException;
 
 class Pipe extends Route
 {
