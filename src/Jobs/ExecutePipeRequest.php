@@ -3,14 +3,14 @@
 namespace Mshule\LaravelPipes\Jobs;
 
 use Illuminate\Bus\Queueable;
-use Mshule\LaravelPipes\Kernel;
-use Mshule\LaravelPipes\Request;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 use Mshule\LaravelPipes\Events\IncomingPipeRequest;
 use Mshule\LaravelPipes\Events\IncomingPipeResponse;
+use Mshule\LaravelPipes\Kernel;
+use Mshule\LaravelPipes\Request;
 
 class ExecutePipeRequest implements ShouldQueue
 {

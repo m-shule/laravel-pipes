@@ -3,10 +3,10 @@
 namespace Mshule\LaravelPipes\Tests;
 
 use Illuminate\Support\Facades\Event;
-use Mshule\LaravelPipes\Facades\Pipe;
-use Mshule\LaravelPipes\Testing\MakesPipeRequests;
 use Mshule\LaravelPipes\Events\IncomingPipeResponse;
 use Mshule\LaravelPipes\Exceptions\NotFoundPipeException;
+use Mshule\LaravelPipes\Facades\Pipe;
+use Mshule\LaravelPipes\Testing\MakesPipeRequests;
 
 class PipeRequestTest extends TestCase
 {
