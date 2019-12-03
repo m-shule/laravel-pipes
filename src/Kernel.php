@@ -3,13 +3,13 @@
 namespace Mshule\LaravelPipes;
 
 use Exception;
-use Throwable;
-use Illuminate\Routing\Pipeline;
-use Illuminate\Support\Facades\Facade;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Illuminate\Routing\Pipeline;
+use Illuminate\Support\Facades\Facade;
 use Mshule\LaravelPipes\Exceptions\NotFoundPipeException;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
+use Throwable;
 
 class Kernel extends HttpKernel
 {
