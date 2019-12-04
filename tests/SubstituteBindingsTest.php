@@ -2,8 +2,8 @@
 
 namespace Mshule\LaravelPipes\Tests;
 
-use Mshule\LaravelPipes\Facades\Pipe;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mshule\LaravelPipes\Facades\Pipe;
 use Mshule\LaravelPipes\Testing\MakesPipeRequests;
 use Mshule\LaravelPipes\Tests\Fixtures\Models\Todo;
 

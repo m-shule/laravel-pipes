@@ -4,9 +4,9 @@ namespace Mshule\LaravelPipes\Facades;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Facade;
-use Mshule\LaravelPipes\Testing\Fakes\PipeFake;
 use Mshule\LaravelPipes\Events\IncomingPipeRequest;
 use Mshule\LaravelPipes\Events\IncomingPipeResponse;
+use Mshule\LaravelPipes\Testing\Fakes\PipeFake;
 
 class Pipe extends Facade
 {

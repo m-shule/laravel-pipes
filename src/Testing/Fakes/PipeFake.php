@@ -2,10 +2,10 @@
 
 namespace Mshule\LaravelPipes\Testing\Fakes;
 
-use Mshule\LaravelPipes\Piper;
 use Illuminate\Support\Facades\Event;
 use Mshule\LaravelPipes\Events\IncomingPipeRequest;
 use Mshule\LaravelPipes\Events\IncomingPipeResponse;
+use Mshule\LaravelPipes\Piper;
 
 class PipeFake extends Piper
 {

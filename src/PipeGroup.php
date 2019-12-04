@@ -2,8 +2,8 @@
 
 namespace Mshule\LaravelPipes;
 
-use Illuminate\Support\Arr;
 use Illuminate\Routing\RouteGroup;
+use Illuminate\Support\Arr;
 
 class PipeGroup extends RouteGroup
 {

@@ -2,11 +2,11 @@
 
 namespace Mshule\LaravelPipes;
 
-use Countable;
 use ArrayIterator;
-use IteratorAggregate;
-use Illuminate\Support\Arr;
+use Countable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use IteratorAggregate;
 use Mshule\LaravelPipes\Exceptions\NotFoundPipeException;
 
 class PipeCollection implements Countable, IteratorAggregate

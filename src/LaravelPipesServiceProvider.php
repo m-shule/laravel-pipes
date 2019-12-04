@@ -2,8 +2,8 @@
 
 namespace Mshule\LaravelPipes;
 
-use Mshule\LaravelPipes\Facades\Pipe;
 use Illuminate\Support\ServiceProvider;
+use Mshule\LaravelPipes\Facades\Pipe;
 
 class LaravelPipesServiceProvider extends ServiceProvider
 {

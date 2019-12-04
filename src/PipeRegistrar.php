@@ -2,8 +2,8 @@
 
 namespace Mshule\LaravelPipes;
 
-use Closure;
 use BadMethodCallException;
+use Closure;
 use InvalidArgumentException;
 
 class PipeRegistrar
