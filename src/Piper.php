@@ -95,9 +95,9 @@ class Piper extends Router implements RegistrarContract
      *
      * @return array
      */
-    public function mergeWithLastGroup($new)
+    public function mergeWithLastGroup($new, $prependExistingPrefix = true)
     {
-        return PipeGroup::merge($new, end($this->groupStack));
+        return PipeGroup::merge($new, end($this->groupStack), $prependExistingPrefix);
     }
 
     /**

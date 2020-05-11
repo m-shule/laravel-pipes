@@ -15,7 +15,7 @@ class PipeGroup extends RouteGroup
      *
      * @return array
      */
-    public static function merge($new, $old)
+    public static function merge($new, $old, $prependExistingPrefix = true)
     {
         $new = array_merge($new, [
             'namespace' => static::formatNamespace($new, $old),
