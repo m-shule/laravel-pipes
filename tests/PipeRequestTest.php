@@ -103,8 +103,8 @@ class PipeRequestTest extends TestCase
         Pipe::match('text', 'something', '\Mshule\LaravelPipes\Tests\Fixtures\Controllers\TestController@doSomething');
 
         $this->pipe([
-                'text' => 'something',
-            ]);
+            'text' => 'something',
+        ]);
 
         Pipe::assertResponded(function ($response) {
             $response->assertOk()
@@ -120,8 +120,8 @@ class PipeRequestTest extends TestCase
         Pipe::match('text:something', '\Mshule\LaravelPipes\Tests\Fixtures\Controllers\TestController@doSomething');
 
         $this->pipe([
-                'text' => 'something',
-            ]);
+            'text' => 'something',
+        ]);
 
         Pipe::assertResponded(function ($response) {
             $response->assertOk()
@@ -141,8 +141,8 @@ class PipeRequestTest extends TestCase
         });
 
         $this->pipe([
-                'text' => 'middle',
-            ]);
+            'text' => 'middle',
+        ]);
 
         Pipe::assertResponded(function ($response) {
             $response->assertOk()
@@ -162,8 +162,8 @@ class PipeRequestTest extends TestCase
         });
 
         $this->pipe([
-                'text' => 'something',
-            ]);
+            'text' => 'something',
+        ]);
 
         Pipe::assertResponded(function ($response) {
             $response->assertOk()
