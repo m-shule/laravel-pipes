@@ -2,7 +2,7 @@
 
 namespace Mshule\LaravelPipes;
 
-use Illuminate\Foundation\Testing\TestResponse;
+use Illuminate\Foundation\Application;
 
 class Response
 {
@@ -15,8 +15,14 @@ class Response
      */
     public static function from($response)
     {
-        return app()->environment('testing')
-            ? new TestResponse($response)
-            : $response;
+        if (!app()->environment('testing')) {
+            return $response;
+        }
+
+        if (version_compare(Application::VERSION, '7.0.0', '>=')) {
+            return new \Illuminate\Testing\TestResponse($response);
+        }
+
+        return new \Illuminate\Foundation\Testing\TestResponse($response);
     }
 }
