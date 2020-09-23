@@ -1,22 +1,29 @@
 language: php
 
 php:
+  - 7.1
   - 7.2
   - 7.3
+  - 7.4
 
 env:
+  global:
+    - coverage=yes
   matrix:
-    - COMPOSER_OPTIONS=""
+    - setup=basic
+    - setup=stable
+    - setup=lowest
 
 before_install:
-  - sudo apt-get update
-  - travis_retry composer self-update
+  - composer config discard-changes true
 
-install:
-  - travis_retry composer update ${COMPOSER_OPTIONS} --prefer-source
+before_script:
+  - if [[ $setup = 'stable' ]]; then travis_retry composer update --prefer-dist --no-interaction --no-suggest --prefer-stable; fi
+  - if [[ $setup = 'lowest' ]]; then travis_retry composer update --prefer-dist --no-interaction --no-suggest --prefer-lowest --prefer-stable; fi
 
 script:
-  - vendor/bin/phpunit
+  - if [[ $coverage = 'yes' ]]; then vendor/bin/phpunit -c phpunit.xml --coverage-clover=coverage.clover; fi
+  - if [[ $coverage = 'no' ]]; then vendor/bin/phpunit -c phpunit.xml; fi
 
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
+after_script:
+  - if [[ $coverage = 'yes' ]]; then wget https://scrutinizer-ci.com/ocular.phar; php ocular.phar code-coverage:upload --format=php-clover coverage.clover; fi
