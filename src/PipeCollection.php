@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use IteratorAggregate;
 use Mshule\LaravelPipes\Exceptions\NotFoundPipeException;
+use Mshule\LaravelPipes\Matching\CueValidator;
+use Mshule\LaravelPipes\Matching\KeyValidator;
+use Mshule\LaravelPipes\Matching\PatternValidator;
 
 class PipeCollection implements Countable, IteratorAggregate
 {
@@ -114,8 +117,21 @@ class PipeCollection implements Countable, IteratorAggregate
         });
 
         return $pipes->merge($fallbacks)->first(function ($value) use ($request) {
-            return $value->matches($request);
+            return $this->fetchMatchedPipes($value, $request);
         });
+    }
+
+    protected function fetchMatchedPipes($value, $request)
+    {
+        if (!$value->matches($request)) {
+            foreach ([new KeyValidator(), new CueValidator(), new PatternValidator()] as $validator) {
+                if (! $validator->matches($value, $request)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
